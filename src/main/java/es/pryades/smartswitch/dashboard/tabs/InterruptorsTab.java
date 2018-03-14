@@ -157,7 +157,7 @@ public class InterruptorsTab extends DashboardTab implements VtoControllerFactor
 					}
 					else
 					{
-						Image image = new Image( null, new ThemeResource( "images/empty" ) );
+						Image image = new Image( null, new ThemeResource( "images/empty.png" ) );
 						row.addComponent( image );
 					}
 					
