@@ -512,15 +512,12 @@ public abstract class PagedContent extends VerticalLayout implements Property.Va
 
 	public void onSelectedRow()
 	{
-		if ( table.getTable().getValue() != null )
-		{
-			Long rowId = (Long)this.table.getTable().getValue();
-			
-			if ( buttonDelete != null )
-				buttonDelete.setEnabled( rowId != null );
-			if ( buttonModify != null )
-				buttonModify.setEnabled( rowId != null );
-		}
+		boolean enabled = table.getTable().getValue() != null;
+		
+		if ( buttonDelete != null )
+			buttonDelete.setEnabled( enabled );
+		if ( buttonModify != null )
+			buttonModify.setEnabled( enabled );
 	}
 	
 	@Override

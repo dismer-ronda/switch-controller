@@ -17,7 +17,6 @@ import es.pryades.smartswitch.common.AppContext;
 import es.pryades.smartswitch.common.BaseException;
 import es.pryades.smartswitch.common.PagedContent;
 import es.pryades.smartswitch.configuration.tabs.FacilitiesConfig;
-import es.pryades.smartswitch.configuration.tabs.InterruptorsConfig;
 import es.pryades.smartswitch.configuration.tabs.ParametersConfig;
 import es.pryades.smartswitch.configuration.tabs.ProfilesConfig;
 import es.pryades.smartswitch.configuration.tabs.TasksConfig;
@@ -83,8 +82,8 @@ public class EnermetTabbedContainerConfig extends VerticalLayout implements TabS
 				if ( ctx.hasRight( "configuration.interruptors" ) )
 					tabContentList.add( new FacilitiesConfig( ctx ) );
 
-				if ( ctx.hasRight( "configuration.interruptors" ) )
-					tabContentList.add( new InterruptorsConfig( ctx ) );
+				/*if ( ctx.hasRight( "configuration.interruptors" ) )
+					tabContentList.add( new InterruptorsConfig( ctx ) );*/
 
 				for ( PagedContent item : tabContentList )
 				{

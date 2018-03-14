@@ -1,8 +1,5 @@
 package es.pryades.smartswitch.configuration.modals;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import lombok.Getter;
 
 import org.apache.log4j.Logger;
@@ -28,7 +25,6 @@ import es.pryades.smartswitch.common.Utils;
 import es.pryades.smartswitch.dto.BaseDto;
 import es.pryades.smartswitch.dto.Facility;
 import es.pryades.smartswitch.dto.FacilityInterruptor;
-import es.pryades.smartswitch.dto.Interruptor;
 import es.pryades.smartswitch.ioc.IOCManager;
 
 /**
@@ -57,8 +53,6 @@ public class ModalNewFacility extends ModalWindowsCRUD implements ModalParent
 	private Button bttnAddInterruptor;
 	private Button bttnModifyInterruptor;
 	private Button bttnDeleteInterruptor;
-	private Button bttnPlanLabor;
-	private Button bttnPlanFree;
 
 	/**
 	 * 
@@ -154,34 +148,6 @@ public class ModalNewFacility extends ModalWindowsCRUD implements ModalParent
 		
 		if ( !getOperation().equals( Operation.OP_VIEW ) )
 		{		
-			bttnPlanLabor = new Button( getContext().getString( "modalNewFacility.plan.labor" ) );
-			bttnPlanLabor.setWidth( Constants.DEFAULT_BUTTON_WIDTH );
-			bttnPlanLabor.addClickListener( new Button.ClickListener()
-			{
-				private static final long serialVersionUID = -1400538311186237425L;
-
-				public void buttonClick( ClickEvent event )
-				{
-					onPlanLabor();
-				}
-			} );
-			colStationsModems.addComponent( bttnPlanLabor );
-			colStationsModems.setComponentAlignment( bttnPlanLabor, Alignment.MIDDLE_CENTER );
-
-			bttnPlanFree = new Button( getContext().getString( "modalNewFacility.plan.free" ) );
-			bttnPlanFree.setWidth( Constants.DEFAULT_BUTTON_WIDTH );
-			bttnPlanFree.addClickListener( new Button.ClickListener()
-			{
-				private static final long serialVersionUID = 8435530029907876332L;
-
-				public void buttonClick( ClickEvent event )
-				{
-					onPlanFree();
-				}
-			} );
-			colStationsModems.addComponent( bttnPlanFree );
-			colStationsModems.setComponentAlignment( bttnPlanFree, Alignment.MIDDLE_CENTER );
-
 			bttnAddInterruptor = new Button( getContext().getString( "modalNewInterruptor.operation.add" ) );
 			bttnAddInterruptor.setWidth( Constants.DEFAULT_BUTTON_WIDTH );
 			bttnAddInterruptor.addClickListener( new Button.ClickListener()
@@ -435,31 +401,5 @@ public class ModalNewFacility extends ModalWindowsCRUD implements ModalParent
 	protected void doEditAfterNew()
 	{
 		new ModalNewFacility( getContext(), Operation.OP_MODIFY, (Facility)newFacility, getModalParent() ).showModalWindow();
-	}
-
-	private void onPlanLabor()
-	{
-		List<Interruptor> interruptors = new ArrayList<Interruptor>();
-		for ( FacilityInterruptor gInterruptor : newFacility.getInterruptors() )
-			interruptors.add( gInterruptor.getInterruptor() );
-		
-		SetInterruptorsPlanDlg dlg = new SetInterruptorsPlanDlg( true, newFacility.getPower() );
-		dlg.setContext( getContext() );
-		dlg.setInterruptors( interruptors );
-		dlg.createComponents();
-		getUI().addWindow( dlg );
-	}
-
-	private void onPlanFree()
-	{
-		List<Interruptor> interruptors = new ArrayList<Interruptor>();
-		for ( FacilityInterruptor gInterruptor : newFacility.getInterruptors() )
-			interruptors.add( gInterruptor.getInterruptor() );
-		
-		SetInterruptorsPlanDlg dlg = new SetInterruptorsPlanDlg( false, newFacility.getPower() );
-		dlg.setContext( getContext() );
-		dlg.setInterruptors( interruptors );
-		dlg.createComponents();
-		getUI().addWindow( dlg );
 	}
 }

@@ -29,7 +29,7 @@ insert into rights (id, code, description) values (14, 'configuration.tasks.dele
 
 insert into rights (id, code, description) values (15, 'main.log','Show system log');
 
-insert into rights (id, code, description) values (16, 'configuration.interruptors','Tasks');
+insert into rights (id, code, description) values (16, 'configuration.interruptors','Interruptors');
 insert into rights (id, code, description) values (17, 'configuration.interruptors.add','Add interruptor');
 insert into rights (id, code, description) values (18, 'configuration.interruptors.modify','Modify interruptor');
 insert into rights (id, code, description) values (19, 'configuration.interruptors.delete','Delete interruptor');

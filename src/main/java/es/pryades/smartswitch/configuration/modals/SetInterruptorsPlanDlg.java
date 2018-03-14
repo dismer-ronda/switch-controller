@@ -57,6 +57,7 @@ public class SetInterruptorsPlanDlg extends Window
 		return true;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void createComponents()
 	{
 		setCaption( getContext().getString( "SelectInterruptorsPlanDlg.title" ) );

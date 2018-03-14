@@ -14,7 +14,6 @@ import com.vaadin.ui.Window;
 
 import es.pryades.smartswitch.common.AppContext;
 import es.pryades.smartswitch.common.AppUtils;
-import es.pryades.smartswitch.common.Constants;
 import es.pryades.smartswitch.common.Utils;
 
 public class ProfileDlg extends Window 
