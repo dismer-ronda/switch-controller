@@ -73,7 +73,7 @@ public class InterruptorsTab extends DashboardTab implements VtoControllerFactor
 		
 		refresher = new Refresher();
 		
-		refresher.setRefreshInterval( (int)(3 * Utils.ONE_MINUTE) );
+		refresher.setRefreshInterval( (int)(Utils.ONE_MINUTE) );
 		refresher.addListener( new RefreshListener()
 		{
 			@Override
