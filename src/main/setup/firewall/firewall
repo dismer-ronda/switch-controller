@@ -1,0 +1,43 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          firewall
+# Required-Start:    $local_fs
+# Required-Stop:     $local_fs
+# Should-Start:
+# Should-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start Firewall
+# Description:       Start IPTables firewall
+### END INIT INFO
+
+echo 1 > /proc/sys/net/ipv4/ip_forward
+
+iptables --flush
+iptables --table nat --flush
+iptables --delete-chain
+iptables --table nat --delete-chain
+
+iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
+iptables -A INPUT -p tcp ! --syn -m state --state NEW -j DROP
+iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type 8 -s 0/0  -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+iptables -A OUTPUT -p icmp --icmp-type 0 -d 0/0 -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# apache
+iptables -A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
+
+# switch-controller
+iptables -A INPUT -p tcp -m tcp --dport 5050 -j ACCEPT
+iptables -A INPUT -p tcp -m tcp --dport 5000 -j ACCEPT
+
+# ssh
+iptables -A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
+
+iptables -I INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+iptables -P OUTPUT ACCEPT
+iptables -P INPUT DROP
+

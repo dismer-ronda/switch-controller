@@ -1,0 +1,10 @@
+- Create database
+
+
+
+- Edit file TOMCAT/bin/catalina.sh and add at the begining block:
+
+export SWITCH_CONTROLLER_PROPERTIES="switch-controller.properties"
+export SWITCH_CONTROLLER_PHANTOMJS="/opt/switch-controller/phantomjs/phantomjs"
+export SWITCH_CONTROLLER_LOGFILE="/var/log/switch-controller.log"
+

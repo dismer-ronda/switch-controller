@@ -1,0 +1,17 @@
+@font-face {
+	font-family: "GNS";
+ 	font-weight: normal;
+ 	src: url("../fonts/Lato-Medium.ttf") format("truetype") /* TTF file for CSS3 browsers */
+}
+
+@font-face {
+	font-family: "GNS";
+	font-weight: bold;
+	src: url("../fonts/Lato-Bold.ttf") format("truetype") /* TTF file for CSS3 browsers */
+}
+
+@font-face {
+	font-family: "GNS";
+	font-style: italic;
+	src: url("../fonts/Lato-MediumItalic.ttf") format("truetype") /* TTF file for CSS3 browsers */
+}

@@ -1,0 +1,75 @@
+- Production and Testing scripts for tomcat id takeover
+
+	- prod
+		sudo /usr/bin/rootsh -i -u ind1tomc
+	
+	-test
+		sudo /usr/bin/rootsh -i -u inditomc
+
+- Production server credentials
+
+	ssh EXUK1402@10.141.3.49 
+	pwd: 4=SAn2jA
+
+	tail -f /apps/INDIGO1/INDIGO1-tomcat/logs/catalina.out
+
+	tail -1000 /apps/INDIGO1/INDIGO1-tomcat/logs/catalina.out | less
+		
+- Testing server credentials
+	
+	ssh EXUK1402@10.141.4.73
+	pwd: 4=SAn2jA
+	
+	tail -f /apps/INDIGO/INDIGO-tomcat/logs/catalina.out
+	
+- Rotarex
+
+	spUrl: 		https://rotarex.sharepoint.com
+	spUser": 	linde_rotarex@rotarex.com
+	spPwd": 	CO2 !Lin
+	spFolder: 	Linde	
+	
+cd insights/deploy-new
+wget http://www.pryades.com/download/indigo/cloud-insights/insights-cloud-1.99.war --no-cache -e use_proxy=yes -e http_proxy=10.132.5.7:8080
+wget http://www.pryades.com/download/indigo/cloud-insights/insights-cloud-2.0.war --no-cache -e use_proxy=yes -e http_proxy=10.132.5.7:8080
+
+cd ../../update
+wget http://www.pryades.com/download/indigo/cloud-insights/DatabaseUpdate.class --no-cache -e use_proxy=yes -e http_proxy=10.132.5.7:8080
+wget http://www.pryades.com/download/indigo/cloud-insights/jtds-1.3.1.jar --no-cache -e use_proxy=yes -e http_proxy=10.132.5.7:8080
+
+wget http://www.pryades.com/download/indigo/cloud-insights/1045_schema-hospitals.sql --no-cache -e use_proxy=yes -e http_proxy=10.132.5.7:8080
+wget http://www.pryades.com/download/indigo/cloud-insights/1046_hospital-manufacuring.sql --no-cache -e use_proxy=yes -e http_proxy=10.132.5.7:8080
+wget http://www.pryades.com/download/indigo/cloud-insights/1047_foreing-keys-missing.sql --no-cache -e use_proxy=yes -e http_proxy=10.132.5.7:8080
+wget http://www.pryades.com/download/indigo/cloud-insights/1048_regions-firmwares.sql --no-cache -e use_proxy=yes -e http_proxy=10.132.5.7:8080
+
+jdbc:jtds:sqlserver://MLGMUC00CSQL020.linde.lds.grp:40000/SQL1;databaseName=pegasusDB
+
+java -cp .:jtds-1.3.1.jar DatabaseUpdate "net.sourceforge.jtds.jdbc.Driver" "jdbc:jtds:sqlserver://MLGMUC00CSQL020.linde.lds.grp:40000/SQL1;databaseName=pegasusDB" indigo init1234 1045_schema-hospitals.sql
+java -cp .:jtds-1.3.1.jar DatabaseUpdate "net.sourceforge.jtds.jdbc.Driver" "jdbc:jtds:sqlserver://MLGMUC00CSQL020.linde.lds.grp:40000/SQL1;databaseName=pegasusDB" indigo init1234 1046_hospital-manufacuring.sql 
+java -cp .:jtds-1.3.1.jar DatabaseUpdate "net.sourceforge.jtds.jdbc.Driver" "jdbc:jtds:sqlserver://MLGMUC00CSQL020.linde.lds.grp:40000/SQL1;databaseName=pegasusDB" indigo init1234 1047_foreing-keys-missing.sql
+java -cp .:jtds-1.3.1.jar DatabaseUpdate "net.sourceforge.jtds.jdbc.Driver" "jdbc:jtds:sqlserver://MLGMUC00CSQL020.linde.lds.grp:40000/SQL1;databaseName=pegasusDB" indigo init1234 1048_regions-firmwares.sql 
+
+- Edit file TOMCAT/bin/catalina.sh and add at the begining block:
+
+export INSIGHTS_PROPERTIES="linde-production.properties"
+export INSIGHTS_PHANTOMJS="/home/appusers/ind1tomc/insights/phantomjs/phantomjs"
+export PEGASUS_LOGS="/home/appusers/ind1tomc/insights/pegasus-logs"
+export LOGFILE="/home/appusers/ind1tomc/insights/logs/insights-prod.log"
+
+- Create link to current prod version
+
+ln -s /home/appusers/ind1tomc/insights/deploy-new/insights.war ROOT.war
+
+/apps/INDIGO1/INDIGO1-tomcat/bin/startup.sh
+/apps/INDIGO1/INDIGO1-tomcat/bin/shutdown.sh
+
+tail -f /apps/INDIGO1/INDIGO1-tomcat/logs/catalina.out | grep PegasusRawDataParser
+
+java -cp .:jtds-1.3.1.jar DatabaseUpdate "net.sourceforge.jtds.jdbc.Driver" "jdbc:jtds:sqlserver://MLGMUC00CSQL020.linde.lds.grp:40000/SQL1;databaseName=pegasusDB" indigo init1234 ip-addr.sql
+
+
+- Fix data invalid 
+
+grep -A 6 -B 21 -i '<EVENT id="E007"' pegasus-2016-48.log > raw-2016-48.txt 
+
+tail -f /apps/INDIGO/INDIGO-tomcat/logs/catalina.out | grep PegasusRawDataParser

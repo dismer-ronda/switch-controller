@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="es.pryades.smartswitch.dal.ibatis.InterruptorMapper">
+
+	<sql id="es.pryades.smartswitch.dal.ibatis.InterruptorMapper.fields">
+		interruptors.id, 
+		interruptors.list_order,
+		interruptors.name,
+		interruptors.description,
+		interruptors.address,
+		interruptors.power,
+		interruptors.plan_labor,
+		interruptors.plan_free,
+		interruptors.enabled,
+		interruptors.state
+	</sql>
+	
+	<sql id="es.pryades.smartswitch.dal.ibatis.InterruptorMapper.joins">
+	</sql>
+	
+	<sql id="es.pryades.smartswitch.dal.ibatis.InterruptorMapper.where">
+		<where>
+			<if test="name != null">
+				AND interruptors.name = #{name}
+			</if>
+			<if test="id != null">
+				AND interruptors.id = #{id}
+			</if>
+		</where>
+	</sql>
+	
+	<select id="getNumberOfRows" parameterType="es.pryades.smartswitch.dto.Query" resultType="long">
+		select 
+			count(*) 
+		
+		from 
+			interruptors 
+	</select>
+
+	<select id="getPage" parameterType="es.pryades.smartswitch.dto.Query" resultType="es.pryades.smartswitch.dto.Interruptor">
+		select
+    		<include refid="es.pryades.smartswitch.dal.ibatis.InterruptorMapper.fields" />
+						
+		from
+			interruptors
+			
+    	<include refid="es.pryades.smartswitch.dal.ibatis.InterruptorMapper.joins" />
+    	<include refid="es.pryades.smartswitch.dal.ibatis.InterruptorMapper.where" />
+    	
+		order by 
+		   	interruptors.list_order
+
+		LIMIT #{pageSize} OFFSET (#{pageSize} * (#{pageNumber} - 1))
+	</select>
+
+	<select id="getRows" parameterType="es.pryades.smartswitch.dto.Query" resultType="es.pryades.smartswitch.dto.Interruptor">
+		select
+    		<include refid="es.pryades.smartswitch.dal.ibatis.InterruptorMapper.fields" />
+						
+		from
+			interruptors
+			
+    	<include refid="es.pryades.smartswitch.dal.ibatis.InterruptorMapper.joins" />
+    	<include refid="es.pryades.smartswitch.dal.ibatis.InterruptorMapper.where" />
+    	
+		order by 
+		   	interruptors.list_order
+	</select>
+
+	<select id="getRow" parameterType="es.pryades.smartswitch.dto.Interruptor" resultType="es.pryades.smartswitch.dto.Interruptor">
+		select
+    		<include refid="es.pryades.smartswitch.dal.ibatis.InterruptorMapper.fields" />
+						
+		from
+			interruptors
+			
+    	<include refid="es.pryades.smartswitch.dal.ibatis.InterruptorMapper.joins" />
+    	<include refid="es.pryades.smartswitch.dal.ibatis.InterruptorMapper.where" />
+	</select>
+
+	<insert id="addRow" parameterType="es.pryades.smartswitch.dto.Interruptor">
+
+		<selectKey keyProperty="id" resultType="long" order="BEFORE">
+			SELECT nextval('gencfg');
+		</selectKey>
+
+		insert into interruptors
+		(
+			id,
+			list_order,
+			name,
+			description,
+			address,
+			power,
+			plan_labor,
+			plan_free,
+			enabled
+		)
+		values
+		(
+			#{id},
+			#{list_order},
+			#{name},
+			#{description},
+			#{address},
+			#{power},
+			#{plan_labor},
+			#{plan_free},
+			#{enabled}
+		)
+	</insert>
+
+	<update id="setRow" parameterType="es.pryades.smartswitch.dto.Interruptor">
+		update interruptors set
+			list_order=#{list_order},
+			name=#{name},
+			description=#{description},
+			address=#{address},
+			power=#{power},
+			plan_labor=#{plan_labor},
+			plan_free=#{plan_free},
+			enabled=#{enabled},
+			state=#{state}
+		where id = #{id}
+	</update>
+
+	<update id="delRow" parameterType="es.pryades.smartswitch.dto.Interruptor">
+		delete from interruptors where id = #{id}
+	</update>
+
+</mapper>

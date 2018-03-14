@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="es.pryades.smartswitch.dal.ibatis.FacilityMapper">
+
+	<resultMap id="mapFacilityInterruptor" type="es.pryades.smartswitch.dto.FacilityInterruptor">
+		<result property="ref_facility" column="ref_facility"/>
+		<result property="ref_interruptor" column="ref_interruptor"/>
+
+		<association property="interruptor" javaType="es.pryades.smartswitch.dto.Interruptor">
+			<id property="id" column="interruptor_id"/>
+			<result property="list_order" column="interruptor_list_order"/>
+			<result property="name" column="interruptor_name"/>
+			<result property="description" column="interruptor_description"/>
+			<result property="address" column="interruptor_address"/>
+			<result property="power" column="interruptor_power"/>
+			<result property="plan_labor" column="interruptor_plan_labor"/>
+			<result property="plan_free" column="interruptor_plan_free"/>
+			<result property="enabled" column="interruptor_enabled"/>
+			<result property="state" column="interruptor_state"/>
+		</association>
+	</resultMap>
+    
+    <resultMap id="mapFacility" type="es.pryades.smartswitch.dto.Facility">
+		<id property="id" column="id"/>
+		<result property="list_order" column="list_order"/>
+		<result property="name" column="name"/>
+		<result property="description" column="description"/>
+		<result property="power" column="power"/>
+		<result property="enabled" column="enabled"/>
+			
+		<collection property="interruptors" column="id" ofType="mapFacilityInterruptor" select="selectFacilityInterruptor"> </collection>
+	</resultMap>
+    
+	<sql id="es.pryades.smartswitch.dal.ibatis.FacilityMapper.fields">
+		facilities.id, 
+		facilities.list_order,
+		facilities.name,
+		facilities.description,
+		facilities.power,
+		facilities.enabled
+	</sql>
+	
+	<sql id="es.pryades.smartswitch.dal.ibatis.FacilityMapper.joins">
+	</sql>
+	
+	<sql id="es.pryades.smartswitch.dal.ibatis.FacilityMapper.where">
+		<where>
+			<if test="name != null">
+				AND facilities.name = #{name}
+			</if>
+			<if test="id != null">
+				AND facilities.id = #{id}
+			</if>
+		</where>
+	</sql>
+	
+	<select id="getNumberOfRows" parameterType="es.pryades.smartswitch.dto.Query" resultType="long">
+		select 
+			count(*) 
+		
+		from 
+			facilities 
+	</select>
+
+	<select id="getPage" parameterType="es.pryades.smartswitch.dto.Query" resultMap="mapFacility">
+		select
+    		<include refid="es.pryades.smartswitch.dal.ibatis.FacilityMapper.fields" />
+						
+		from
+			facilities
+			
+    	<include refid="es.pryades.smartswitch.dal.ibatis.FacilityMapper.joins" />
+    	<include refid="es.pryades.smartswitch.dal.ibatis.FacilityMapper.where" />
+    	
+		order by 
+		   	facilities.list_order
+
+		LIMIT #{pageSize} OFFSET (#{pageSize} * (#{pageNumber} - 1))
+	</select>
+
+	<select id="getRows" parameterType="es.pryades.smartswitch.dto.Query" resultMap="mapFacility">
+		select
+    		<include refid="es.pryades.smartswitch.dal.ibatis.FacilityMapper.fields" />
+						
+		from
+			facilities
+			
+    	<include refid="es.pryades.smartswitch.dal.ibatis.FacilityMapper.joins" />
+    	<include refid="es.pryades.smartswitch.dal.ibatis.FacilityMapper.where" />
+    	
+		order by 
+		   	facilities.list_order
+	</select>
+
+	<select id="getRow" parameterType="es.pryades.smartswitch.dto.Facility" resultMap="mapFacility">
+		select
+    		<include refid="es.pryades.smartswitch.dal.ibatis.FacilityMapper.fields" />
+						
+		from
+			facilities
+			
+    	<include refid="es.pryades.smartswitch.dal.ibatis.FacilityMapper.joins" />
+    	<include refid="es.pryades.smartswitch.dal.ibatis.FacilityMapper.where" />
+	</select>
+
+	<insert id="addRow" parameterType="es.pryades.smartswitch.dto.Facility">
+
+		<selectKey keyProperty="id" resultType="long" order="BEFORE">
+			SELECT nextval('gencfg');
+		</selectKey>
+
+		insert into facilities
+		(
+			id,
+			list_order,
+			name,
+			description,
+			power,
+			enabled
+		)
+		values
+		(
+			#{id},
+			#{list_order},
+			#{name},
+			#{description},
+			#{power},
+			#{enabled}
+		)
+	</insert>
+
+	<update id="setRow" parameterType="es.pryades.smartswitch.dto.Facility">
+		update facilities set
+			list_order=#{list_order},
+			name=#{name},
+			description=#{description},
+			power=#{power},
+			enabled=#{enabled}
+		where id = #{id}
+	</update>
+
+	<update id="delRow" parameterType="es.pryades.smartswitch.dto.Facility">
+		delete from facilities where id = #{id}
+	</update>
+
+	<select id="selectFacilityInterruptor" parameterType="long" resultMap="mapFacilityInterruptor">
+		select 
+			facility_interruptors.ref_facility,
+			facility_interruptors.ref_interruptor,
+		
+			interruptors.id as interruptor_id,
+			interruptors.list_order as interruptor_list_order,
+			interruptors.name as interruptor_name,
+			interruptors.description as interruptor_description,
+			interruptors.address as interruptor_address,
+			interruptors.power as interruptor_power,
+			interruptors.plan_labor as interruptor_plan_labor,
+			interruptors.plan_free as interruptor_plan_free,
+			interruptors.enabled as interruptor_enabled,
+			interruptors.state as interruptor_state
+				
+		from facility_interruptors
+		 		
+		inner join interruptors
+		on facility_interruptors.ref_interruptor = interruptors.id
+		
+		where 
+			facility_interruptors.ref_facility=#{id}
+			
+		order by interruptors.list_order
+	</select>
+		
+</mapper>

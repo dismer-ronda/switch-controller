@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="es.pryades.smartswitch.dal.ibatis.RightMapper">
+
+	<select id="getNumberOfRows" parameterType="es.pryades.smartswitch.dto.Query" resultType="long">
+		select count(*) from rights 
+	</select>
+
+	<select id="getPage" parameterType="es.pryades.smartswitch.dto.Query" resultType="es.pryades.smartswitch.dto.Right">
+		select
+			*
+		
+		from
+			rights
+			
+		order by id
+
+		LIMIT #{pageSize} OFFSET (#{pageSize} * (#{pageNumber} - 1))
+	</select>
+
+	<select id="getRows" parameterType="es.pryades.smartswitch.dto.Query" resultType="es.pryades.smartswitch.dto.Right">
+		select
+			*
+		
+		from
+			rights
+		
+		order by id
+	</select>
+
+	<select id="getRow" parameterType="es.pryades.smartswitch.dto.Right" resultType="es.pryades.smartswitch.dto.Right">
+		select 
+			* 
+			
+		from 
+			rights 
+			
+		where id = #{id}
+	</select>
+
+	<insert id="addRow" parameterType="es.pryades.smartswitch.dto.Right">
+
+		<selectKey keyProperty="id" resultType="long" order="BEFORE">
+			SELECT nextval('gencfg');
+		</selectKey>
+
+		insert into rights
+		(
+			id,
+			code,
+			description
+		)
+		values
+		(
+			#{id},
+			#{code},
+			#{description}
+		)
+	</insert>
+
+	<update id="setRow" parameterType="es.pryades.smartswitch.dto.Right">
+		update rights set
+			code=#{code},
+			description=#{description}
+		where id = #{id}
+	</update>
+
+	<update id="delRow" parameterType="es.pryades.smartswitch.dto.Right">
+		delete from rights where id = #{id}
+	</update>
+
+</mapper>
