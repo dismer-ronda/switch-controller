@@ -76,6 +76,8 @@ public class InterruptorsTab extends DashboardTab implements VtoControllerFactor
 		refresher.setRefreshInterval( (int)(Utils.ONE_MINUTE) );
 		refresher.addListener( new RefreshListener()
 		{
+			private static final long serialVersionUID = -7798907363887838527L;
+
 			@Override
 			public void refresh( Refresher source )
 			{
@@ -137,7 +139,9 @@ public class InterruptorsTab extends DashboardTab implements VtoControllerFactor
 					label2.setValue( lastAlive != null ? CalendarUtils.getFormatedDate( lastAlive, "HH:mm:ss" ) : getContext().getString( "interruptorsTab.not.yet.connected" ) );
 					
 					column.addComponent( label1 );
+					column.setComponentAlignment( label1, Alignment.MIDDLE_CENTER );
 					column.addComponent( label2 );
+					column.setComponentAlignment( label2, Alignment.MIDDLE_CENTER );
 					
 					row.addComponent( column );
 					row.setComponentAlignment( column, Alignment.MIDDLE_CENTER );
@@ -149,6 +153,24 @@ public class InterruptorsTab extends DashboardTab implements VtoControllerFactor
 						Image image = new Image( null, new ThemeResource( "images/" + (state == null ? "off.png" : ((state.equals( 1 ) ? "on.png" : "off.png") ) ) ) );
 						image.setEnabled( state != null && lastAlive != null );
 						row.addComponent( image );
+					}
+					
+					if ( state == null ) 
+						row.addStyleName( "critical" );
+					else if ( lastAlive == null )
+						row.addStyleName( "critical" );
+					else 
+					{
+						long delay = Utils.getDurationInSeconds( lastAlive, CalendarUtils.getServerDateAsLong() );
+						
+						LOG.info( "delay=" + delay );
+						
+						if ( delay < 120 )
+							row.addStyleName( "normal" );
+						else if ( delay < 240 )
+							row.addStyleName( "warning" );
+						else
+							row.addStyleName( "critical" );
 					}
 					
 					columnFacility.addComponent( row );
