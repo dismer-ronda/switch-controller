@@ -13,7 +13,8 @@
 		interruptors.plan_labor,
 		interruptors.plan_free,
 		interruptors.enabled,
-		interruptors.state
+		interruptors.state,
+		interruptors.last_signal
 	</sql>
 	
 	<sql id="es.pryades.smartswitch.dal.ibatis.InterruptorMapper.joins">
@@ -95,7 +96,8 @@
 			power,
 			plan_labor,
 			plan_free,
-			enabled
+			enabled,
+			last_signal
 		)
 		values
 		(
@@ -107,7 +109,8 @@
 			#{power},
 			#{plan_labor},
 			#{plan_free},
-			#{enabled}
+			#{enabled},
+			#{last_signal}
 		)
 	</insert>
 
@@ -121,7 +124,8 @@
 			plan_labor=#{plan_labor},
 			plan_free=#{plan_free},
 			enabled=#{enabled},
-			state=#{state}
+			state=#{state},
+			last_signal=#{last_signal}
 		where id = #{id}
 	</update>
 

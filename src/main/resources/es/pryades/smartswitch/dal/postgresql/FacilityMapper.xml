@@ -18,6 +18,7 @@
 			<result property="plan_free" column="interruptor_plan_free"/>
 			<result property="enabled" column="interruptor_enabled"/>
 			<result property="state" column="interruptor_state"/>
+			<result property="last_signal" column="interruptor_last_signal"/>
 		</association>
 	</resultMap>
     
@@ -158,7 +159,8 @@
 			interruptors.plan_labor as interruptor_plan_labor,
 			interruptors.plan_free as interruptor_plan_free,
 			interruptors.enabled as interruptor_enabled,
-			interruptors.state as interruptor_state
+			interruptors.state as interruptor_state,
+			interruptors.last_signal as interruptor_last_signal
 				
 		from facility_interruptors
 		 		

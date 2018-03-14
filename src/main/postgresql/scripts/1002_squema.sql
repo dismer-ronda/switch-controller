@@ -124,6 +124,7 @@ create table interruptors (
 
     enabled integer not null default 1,
     state integer,
+    last_signal bigint,
 
     constraint pk_interruptors primary key(id),
     constraint uk_interruptors_name unique (name)    

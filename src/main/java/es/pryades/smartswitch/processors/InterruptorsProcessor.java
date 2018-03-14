@@ -8,6 +8,7 @@ import java.util.TimeZone;
 import org.apache.log4j.Logger;
 
 import es.pryades.smartswitch.common.AppContext;
+import es.pryades.smartswitch.common.CalendarUtils;
 import es.pryades.smartswitch.common.Settings;
 import es.pryades.smartswitch.common.Status;
 import es.pryades.smartswitch.common.Utils;
@@ -263,6 +264,7 @@ public class InterruptorsProcessor extends Thread
 				Interruptor clone = (Interruptor)Utils.clone( interruptor );
 				clone.setState( Integer.valueOf( transport.read( 3 * Utils.ONE_SECOND ) ) );
 				clone.setAddress( readInterruptorAddress() );
+				clone.setLast_signal( CalendarUtils.getServerDateAsLong() );
 
 				IOCManager._InterruptorsManager.setRow( ctx, interruptor, clone );
 				

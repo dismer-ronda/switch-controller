@@ -24,6 +24,7 @@ import es.pryades.smartswitch.common.AppContext;
 import es.pryades.smartswitch.common.BaseException;
 import es.pryades.smartswitch.common.Utils;
 import es.pryades.smartswitch.dashboard.tabs.DashboardTab;
+import es.pryades.smartswitch.dashboard.tabs.InterruptorsTab;
 import es.pryades.smartswitch.dashboard.tabs.LogTab;
 
 /**
@@ -190,10 +191,21 @@ public class Dashboard extends VerticalLayout implements SelectedTabChangeListen
 		tabs.add( tab );
 	}
 	
+	private void createInterruptorsTab()
+	{
+		InterruptorsTab tab = new InterruptorsTab( context );
+		
+		tab.initComponents();
+	
+		tabs.add( tab );
+	}
+	
 	private void createTabs()
 	{
 		if ( getContext().hasRight( "main.log" ) && Utils.getEnviroment( "LOGFILE" ) != null )
 			createLogTab();
+
+		createInterruptorsTab();
 	}
 
 	private void selectTab( DashboardTab tab )

@@ -27,4 +27,5 @@ public class Interruptor extends BaseDto
 	private Integer	enabled;
 	
 	private Integer state;
+	private Long last_signal;
 }
