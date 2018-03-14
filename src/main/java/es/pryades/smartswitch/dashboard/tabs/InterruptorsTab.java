@@ -34,6 +34,8 @@ import es.pryades.smartswitch.common.Utils;
 import es.pryades.smartswitch.common.VtoControllerFactory;
 import es.pryades.smartswitch.dal.BaseManager;
 import es.pryades.smartswitch.dto.BaseDto;
+import es.pryades.smartswitch.dto.Facility;
+import es.pryades.smartswitch.dto.FacilityInterruptor;
 import es.pryades.smartswitch.dto.Interruptor;
 import es.pryades.smartswitch.ioc.IOCManager;
 
@@ -94,49 +96,65 @@ public class InterruptorsTab extends DashboardTab implements VtoControllerFactor
 	{
 		try
 		{
-			Interruptor query = new Interruptor();
-			interruptors = IOCManager._InterruptorsManager.getRows( getContext(), query );
+			Facility query = new Facility();
+			List<Facility> facilities = IOCManager._FacilitiesManager.getRows( getContext(), query );
 			
 			logLayout.removeAllComponents();
 			
-			for ( int i = 0; i < interruptors.size(); i++ )
+			for ( Facility facility : facilities )
 			{
-				Interruptor interruptor = interruptors.get( i );
+				VerticalLayout columnFacility = new VerticalLayout();
+				columnFacility.setWidth( "480px" );
+				columnFacility.setSpacing( true );
+				columnFacility.setMargin( true );
+
+				Label labelFacility = new Label();
+				labelFacility.setWidth( "100%" );
+				labelFacility.setValue( facility.getName() );
 				
-				HorizontalLayout row = new HorizontalLayout();
-				row.setSpacing( true );
-				row.setMargin( true );
+				columnFacility.addComponent( labelFacility );
 				
-				VerticalLayout column = new VerticalLayout();
-				column.setWidth( "240px" );
-				column.setSpacing( true );
-				
-				Label label1 = new Label();
-				label1.setWidth( "100%" );
-				label1.setValue( interruptor.getName() );
-				
-				Long lastAlive = interruptor.getLast_signal();
-				
-				Label label2 = new Label();
-				label2.setWidth( "100%" );
-				label2.setValue( lastAlive != null ? CalendarUtils.getFormatedDate( lastAlive, "HH:mm:ss" ) : getContext().getString( "interruptorsTab.not.yet.connected" ) );
-				
-				column.addComponent( label1 );
-				column.addComponent( label2 );
-				
-				row.addComponent( column );
-				row.setComponentAlignment( column, Alignment.MIDDLE_CENTER );
-				
-				Integer state = interruptor.getState();
-				
-				if ( state != null && lastAlive != null )
+				for ( FacilityInterruptor fi : facility.getInterruptors() )
 				{
-					Image image = new Image( null, new ThemeResource( "images/" + (state == null ? "off.png" : ((state.equals( 1 ) ? "on.png" : "off.png") ) ) ) );
-					image.setEnabled( state != null && lastAlive != null );
-					row.addComponent( image );
+					Interruptor interruptor = fi.getInterruptor();
+					
+					HorizontalLayout row = new HorizontalLayout();
+					row.setSpacing( true );
+					row.setMargin( true );
+					
+					VerticalLayout column = new VerticalLayout();
+					column.setWidth( "240px" );
+					column.setSpacing( true );
+					
+					Label label1 = new Label();
+					label1.setWidth( "100%" );
+					label1.setValue( interruptor.getName() );
+					
+					Long lastAlive = interruptor.getLast_signal();
+					
+					Label label2 = new Label();
+					label2.setWidth( "100%" );
+					label2.setValue( lastAlive != null ? CalendarUtils.getFormatedDate( lastAlive, "HH:mm:ss" ) : getContext().getString( "interruptorsTab.not.yet.connected" ) );
+					
+					column.addComponent( label1 );
+					column.addComponent( label2 );
+					
+					row.addComponent( column );
+					row.setComponentAlignment( column, Alignment.MIDDLE_CENTER );
+					
+					Integer state = interruptor.getState();
+					
+					if ( state != null && lastAlive != null )
+					{
+						Image image = new Image( null, new ThemeResource( "images/" + (state == null ? "off.png" : ((state.equals( 1 ) ? "on.png" : "off.png") ) ) ) );
+						image.setEnabled( state != null && lastAlive != null );
+						row.addComponent( image );
+					}
+					
+					columnFacility.addComponent( row );
 				}
-				
-				logLayout.addComponent( row );
+
+				logLayout.addComponent( columnFacility );
 			}
 		}
 		catch ( Throwable e )
