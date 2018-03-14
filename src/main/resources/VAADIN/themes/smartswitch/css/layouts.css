@@ -272,18 +272,21 @@
 }
 
 .v-horizontallayout-normal {
+	padding: 6px;
 	border: 2px solid #2AA931;
 	background-color: rgba(137,165,78,0.5);
 	border-radius: 4px;
 }
 
 .v-horizontallayout-warning {
+	padding: 6px;
 	background-color: rgba(255,199,0,0.5);
 	border: 2px solid #C7A615;
 	border-radius: 4px;
 }
 
 .v-horizontallayout-critical {
+	margin-right: 6px;
 	background-color: rgba(255,91,70,0.5);
 	border: 2px solid #B3211E;
 	border-radius: 4px;

@@ -1,6 +1,5 @@
 package es.pryades.smartswitch.dashboard.tabs;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Getter;
@@ -10,22 +9,15 @@ import org.apache.log4j.Logger;
 
 import com.github.wolfie.refresher.Refresher;
 import com.github.wolfie.refresher.Refresher.RefreshListener;
-import com.google.gwt.dev.util.collect.HashMap;
-import com.vaadin.data.Item;
-import com.vaadin.data.Property;
-import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.server.ThemeResource;
-import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
-import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Image;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Table;
-import com.vaadin.ui.TextArea;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Table.Align;
 
 import es.pryades.smartswitch.common.AppContext;
 import es.pryades.smartswitch.common.CalendarUtils;
@@ -65,7 +57,7 @@ public class InterruptorsTab extends DashboardTab implements VtoControllerFactor
 		
 		logLayout = new VerticalLayout();
 		logLayout.setSizeUndefined();
-		logLayout.setMargin( new MarginInfo( false, true, true, true ) );
+		logLayout.setMargin( true );
 		logLayout.setSpacing( true );
 
 		mainLayout.addComponent( logLayout );
@@ -105,23 +97,20 @@ public class InterruptorsTab extends DashboardTab implements VtoControllerFactor
 			
 			for ( Facility facility : facilities )
 			{
-				VerticalLayout columnFacility = new VerticalLayout();
-				columnFacility.setWidth( "520px" );
-				columnFacility.setSpacing( true );
-				columnFacility.setMargin( true );
+				CssLayout layoutFacility = new CssLayout();
 
 				Label labelFacility = new Label();
 				labelFacility.setWidth( "100%" );
 				labelFacility.setValue( facility.getName() );
 				
-				columnFacility.addComponent( labelFacility );
+				layoutFacility.addComponent( labelFacility );
 				
 				for ( FacilityInterruptor fi : facility.getInterruptors() )
 				{
 					Interruptor interruptor = fi.getInterruptor();
 					
 					HorizontalLayout row = new HorizontalLayout();
-					row.setWidth( "480px" );
+					row.setWidth( "360px" );
 					row.setSpacing( true );
 					row.setMargin( true );
 					
@@ -169,8 +158,6 @@ public class InterruptorsTab extends DashboardTab implements VtoControllerFactor
 					{
 						long delay = Utils.getDurationInSeconds( lastAlive, CalendarUtils.getServerDateAsLong() );
 						
-						LOG.info( "delay=" + delay );
-						
 						if ( delay < 120 )
 							row.addStyleName( "normal" );
 						else if ( delay < 240 )
@@ -181,10 +168,10 @@ public class InterruptorsTab extends DashboardTab implements VtoControllerFactor
 
 					row.setComponentAlignment( column, Alignment.MIDDLE_CENTER );
 					
-					columnFacility.addComponent( row );
+					layoutFacility.addComponent( row );
 				}
 
-				logLayout.addComponent( columnFacility );
+				logLayout.addComponent( layoutFacility );
 			}
 		}
 		catch ( Throwable e )
