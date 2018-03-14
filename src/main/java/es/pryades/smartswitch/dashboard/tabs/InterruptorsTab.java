@@ -106,7 +106,7 @@ public class InterruptorsTab extends DashboardTab implements VtoControllerFactor
 			for ( Facility facility : facilities )
 			{
 				VerticalLayout columnFacility = new VerticalLayout();
-				columnFacility.setWidth( "480px" );
+				columnFacility.setWidth( "520px" );
 				columnFacility.setSpacing( true );
 				columnFacility.setMargin( true );
 
@@ -121,11 +121,12 @@ public class InterruptorsTab extends DashboardTab implements VtoControllerFactor
 					Interruptor interruptor = fi.getInterruptor();
 					
 					HorizontalLayout row = new HorizontalLayout();
+					row.setWidth( "480px" );
 					row.setSpacing( true );
 					row.setMargin( true );
 					
 					VerticalLayout column = new VerticalLayout();
-					column.setWidth( "240px" );
+					column.setWidth( "100%" );
 					column.setSpacing( true );
 					
 					Label label1 = new Label();
@@ -144,7 +145,7 @@ public class InterruptorsTab extends DashboardTab implements VtoControllerFactor
 					column.setComponentAlignment( label2, Alignment.MIDDLE_CENTER );
 					
 					row.addComponent( column );
-					row.setComponentAlignment( column, Alignment.MIDDLE_CENTER );
+					row.setExpandRatio( column, 1.0f );
 					
 					Integer state = interruptor.getState();
 					
@@ -152,6 +153,11 @@ public class InterruptorsTab extends DashboardTab implements VtoControllerFactor
 					{
 						Image image = new Image( null, new ThemeResource( "images/" + (state == null ? "off.png" : ((state.equals( 1 ) ? "on.png" : "off.png") ) ) ) );
 						image.setEnabled( state != null && lastAlive != null );
+						row.addComponent( image );
+					}
+					else
+					{
+						Image image = new Image( null, new ThemeResource( "images/empty" ) );
 						row.addComponent( image );
 					}
 					
@@ -172,6 +178,8 @@ public class InterruptorsTab extends DashboardTab implements VtoControllerFactor
 						else
 							row.addStyleName( "critical" );
 					}
+
+					row.setComponentAlignment( column, Alignment.MIDDLE_CENTER );
 					
 					columnFacility.addComponent( row );
 				}
