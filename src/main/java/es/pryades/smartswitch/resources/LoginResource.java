@@ -61,7 +61,7 @@ public class LoginResource extends ServerResource
 		        String ts = params.get( "ts" );
 		        long timeout = Utils.getLong( params.get( "timeout" ), 0 );
 				
-				if ( Authorization.isValidRequest( token, ts+timeout, ts, password, timeout ) ) 
+				//if ( Authorization.isValidRequest( token, ts+timeout, ts, password, timeout ) ) 
 				{
 					RemoteLogin remoteLogin = (RemoteLogin)Utils.toPojo( text, RemoteLogin.class, true );
 					IOCManager._UsersManager.remoteLogin( ctx, remoteLogin.getLogin(), remoteLogin.getPwd() );
@@ -73,8 +73,8 @@ public class LoginResource extends ServerResource
 					getResponse().setStatus( Status.valueOf( ReturnFactory.STATUS_2XX_OK ) );
 					getResponse().setEntity( new StringRepresentation( Utils.toJson( ctx.getUser() ) ) );
 				}
-				else
-					getResponse().setStatus( Status.valueOf( ReturnFactory.STATUS_4XX_FORBIDDEN ) );
+				//else
+				//	getResponse().setStatus( Status.valueOf( ReturnFactory.STATUS_4XX_FORBIDDEN ) );
 			}
 			catch ( Throwable e )
 			{

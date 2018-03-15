@@ -6,6 +6,7 @@ import org.restlet.Restlet;
 import org.restlet.routing.Router;
 
 import es.pryades.smartswitch.resources.ChartToPngResource;
+import es.pryades.smartswitch.resources.FacilityResource;
 import es.pryades.smartswitch.resources.LoginResource;
 
 public class ServicesServlet extends Application
@@ -25,6 +26,7 @@ public class ServicesServlet extends Application
     	router.attach( "/chart-png", ChartToPngResource.class );
 
     	router.attach( "/login", LoginResource.class );
+    	router.attach( "/facility/{name}", FacilityResource.class );
 
     	LOG.info( "started" );
 	    
