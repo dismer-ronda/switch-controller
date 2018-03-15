@@ -158,9 +158,9 @@ public class InterruptorsTab extends DashboardTab implements VtoControllerFactor
 					{
 						long delay = Utils.getDurationInSeconds( lastAlive, CalendarUtils.getServerDateAsLong() );
 						
-						if ( delay < 120 )
+						if ( delay < 240 )
 							row.addStyleName( "normal" );
-						else if ( delay < 240 )
+						else if ( delay < 480 )
 							row.addStyleName( "warning" );
 						else
 							row.addStyleName( "critical" );

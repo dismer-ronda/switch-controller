@@ -28,7 +28,9 @@ static const char *TAG_MAIN = "MAIN";
 static const char *TAG_WORK = "WORK";
 
 #define GPIO_OUTPUT_IO_0    	32
-#define GPIO_OUTPUT_PIN_SEL  	(1ULL<<GPIO_OUTPUT_IO_0) 
+#define GPIO_OUTPUT_IO_1    	33
+
+#define GPIO_OUTPUT_PIN_SEL  ((1ULL<<GPIO_OUTPUT_IO_0) | (1ULL<<GPIO_OUTPUT_IO_1))
 
 volatile uint8_t state = 0;
 uint8_t plan[96];
@@ -46,6 +48,28 @@ void getHourMinute( int * h, int * m, int * s )
 	*s = ti->tm_sec;
 }
 
+void initialize_io()
+{
+	gpio_config_t io_conf;
+    io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
+    io_conf.mode = GPIO_MODE_OUTPUT;
+    io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL;
+    io_conf.pull_down_en = 0;
+    io_conf.pull_up_en = 0;
+
+    gpio_config(&io_conf);
+}
+
+void io_relay( int state )
+{
+	gpio_set_level(GPIO_OUTPUT_IO_0, state);
+}
+
+void led_connection( int on )
+{
+	gpio_set_level(GPIO_OUTPUT_IO_1, on);
+}
+
 void working_task(void *p)
 {
 	while ( 1 )
@@ -61,7 +85,9 @@ void working_task(void *p)
 		
 		if ( action != state )
 		{
-			gpio_set_level(GPIO_OUTPUT_IO_0, action);
+			ESP_LOGI(TAG_WORK, "setting GPIO0 %s...", state ? "on" : "off" );
+			io_relay( state );
+
 			state = action;
 			ESP_LOGI(TAG_WORK, "State changed to %s...", state ? "on" : "off" );
 		}
@@ -71,18 +97,6 @@ void working_task(void *p)
 		ESP_LOGI(TAG_WORK, "Waiting for %d seconds...", 60-s );
 		vTaskDelay((60-s)*1000 / portTICK_PERIOD_MS);
 	}
-}
-
-void initialize_io()
-{
-	gpio_config_t io_conf;
-    io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
-    io_conf.mode = GPIO_MODE_OUTPUT;
-    io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL;
-    io_conf.pull_down_en = 0;
-    io_conf.pull_up_en = 0;
-
-    gpio_config(&io_conf);
 }
 
 void reboot( char * message )
@@ -108,6 +122,11 @@ void app_main()
 
 	CONFIGURATION * config = get_configuration();
 
+	initialize_io();
+
+	int connection = 0;
+	led_connection( connection );
+
 	xTaskCreate(&bluetooth_config_task, "bluetooth_config_task", 4096, NULL, 5, NULL);
 	xTaskCreate(&wifi_connection_task, "wifi_connection_task", 4096, config, 5, NULL);
 	
@@ -116,6 +135,9 @@ void app_main()
 		ESP_LOGI(TAG_MAIN, "Waiting for wifi connection...");
 		vTaskDelay(1000 / portTICK_PERIOD_MS);
 		
+		connection = 1-connection;
+		led_connection( connection );
+
 		if ( configuration_changed() )
 			reboot("Configuration changed. Restarting...");
 	}
@@ -169,7 +191,7 @@ void app_main()
 		}
 		
 		ESP_LOGI(TAG_MAIN, "Sending alive signal...");
-		sendAliveSignal( config, state );
+		led_connection( sendAliveSignal( config, state ) );
 
 		ESP_LOGI(TAG_MAIN, "Waiting for %d seconds...", 60-s );
 		vTaskDelay((60-s)*1000 / portTICK_PERIOD_MS);
