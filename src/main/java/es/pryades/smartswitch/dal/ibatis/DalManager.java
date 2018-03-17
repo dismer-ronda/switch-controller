@@ -70,6 +70,8 @@ public class DalManager
 						"<mapper resource='es/pryades/smartswitch/dal/" + engine + "/InterruptorMapper.xml'/>" +
 						"<mapper resource='es/pryades/smartswitch/dal/" + engine + "/FacilityMapper.xml'/>" +
 						"<mapper resource='es/pryades/smartswitch/dal/" + engine + "/FacilityInterruptorMapper.xml'/>" +
+						"<mapper resource='es/pryades/smartswitch/dal/" + engine + "/HolidayMapper.xml'/>" +
+						"<mapper resource='es/pryades/smartswitch/dal/" + engine + "/FacilityHolidayMapper.xml'/>" +
 					"</mappers>"+
 				"</configuration>";
 				

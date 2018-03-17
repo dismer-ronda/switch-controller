@@ -27,26 +27,27 @@
 }
 
 td.v-datefield-calendarpanel-month {
-	font-size: 16px;
+	font-size: 18px;
 	text-shadow: none;
 	background: #2B2926;
 	color: white;
 }
 
 .v-datefield-calendarpanel-weekdays strong {
-	font-size: 16px;
+	font-size: 18px;
 	text-shadow: none;
 	background: #2B2926;
 }
 
 input.v-datefield-textfield[type="text"] {
-	font-size: 13px;
+	font-size: 18px;
 }
 
 .v-datefield-calendarpanel-time select {
-	font-size: 16px;
+	font-size: 18px;
 }
 
 .v-datefield-button {
 	padding: 0px;
+	font-size: 18px;
 }

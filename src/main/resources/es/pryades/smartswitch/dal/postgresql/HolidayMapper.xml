@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="es.pryades.smartswitch.dal.ibatis.HolidayMapper">
+
+	<sql id="es.pryades.smartswitch.dal.ibatis.HolidayMapper.fields">
+		holidays.id, 
+		holidays.holiday_name,
+		holidays.holiday_type,
+		holidays.holiday_value
+	</sql>
+	
+	<sql id="es.pryades.smartswitch.dal.ibatis.HolidayMapper.joins">
+	</sql>
+	
+	<sql id="es.pryades.smartswitch.dal.ibatis.HolidayMapper.where">
+	    <where>
+		</where>
+	    
+	</sql>
+	
+	<select id="getNumberOfRows" parameterType="es.pryades.smartswitch.dto.Query" resultType="long">
+		select 
+			count(*) 
+		
+		from 
+			holidays 
+	</select>
+
+	<select id="getPage" parameterType="es.pryades.smartswitch.dto.Query" resultType="es.pryades.smartswitch.dto.Holiday">
+		select
+    		<include refid="es.pryades.smartswitch.dal.ibatis.HolidayMapper.fields" />
+						
+		from
+			holidays
+			
+    	<include refid="es.pryades.smartswitch.dal.ibatis.HolidayMapper.joins" />
+    	<include refid="es.pryades.smartswitch.dal.ibatis.HolidayMapper.where" />
+    	
+		order by 
+		   	holidays.holiday_type, holidays.holiday_value
+
+		LIMIT #{pageSize} OFFSET (#{pageSize} * (#{pageNumber} - 1))
+	</select>
+
+	<select id="getRows" parameterType="es.pryades.smartswitch.dto.Query" resultType="es.pryades.smartswitch.dto.Holiday">
+		select
+    		<include refid="es.pryades.smartswitch.dal.ibatis.HolidayMapper.fields" />
+						
+		from
+			holidays
+			
+    	<include refid="es.pryades.smartswitch.dal.ibatis.HolidayMapper.joins" />
+    	<include refid="es.pryades.smartswitch.dal.ibatis.HolidayMapper.where" />
+    	
+		order by 
+		   	holidays.holiday_type, holidays.holiday_value
+	</select>
+
+	<select id="getRow" parameterType="es.pryades.smartswitch.dto.Holiday" resultType="es.pryades.smartswitch.dto.Holiday">
+		select
+    		<include refid="es.pryades.smartswitch.dal.ibatis.HolidayMapper.fields" />
+						
+		from
+			holidays
+			
+    	<include refid="es.pryades.smartswitch.dal.ibatis.HolidayMapper.joins" />
+    	<include refid="es.pryades.smartswitch.dal.ibatis.HolidayMapper.where" />
+	</select>
+
+	<insert id="addRow" parameterType="es.pryades.smartswitch.dto.Holiday">
+
+		<selectKey keyProperty="id" resultType="long" order="BEFORE">
+			SELECT nextval('gencfg');
+		</selectKey>
+
+		insert into holidays
+		(
+			id,
+			holiday_name,
+			holiday_type,
+			holiday_value
+		)
+		values
+		(
+			#{id},
+			#{holiday_name},
+			#{holiday_type},
+			#{holiday_value}
+		)
+	</insert>
+
+	<update id="setRow" parameterType="es.pryades.smartswitch.dto.Holiday">
+		update holidays set
+			holiday_name=#{holiday_name},
+			holiday_type=#{holiday_type},
+			holiday_value=#{holiday_value}
+		where id = #{id}
+	</update>
+
+	<update id="delRow" parameterType="es.pryades.smartswitch.dto.Holiday">
+		delete from holidays where id = #{id}
+	</update>
+
+</mapper>

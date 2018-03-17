@@ -31,5 +31,7 @@ public class StandaloneModule
 		binder.bind( InterruptorsManager.class, InterruptorsManagerImpl.class);
 		binder.bind( FacilitiesManager.class, FacilitiesManagerImpl.class);
 		binder.bind( FacilityInterruptorsManager.class, FacilityInterruptorsManagerImpl.class);
+		binder.bind( HolidaysManager.class, HolidaysManagerImpl.class);
+		binder.bind( FacilityHolidaysManager.class, FacilityHolidaysManagerImpl.class);
 	}
 }

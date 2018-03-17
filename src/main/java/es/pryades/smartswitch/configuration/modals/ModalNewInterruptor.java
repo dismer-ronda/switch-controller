@@ -180,7 +180,7 @@ public class ModalNewInterruptor extends ModalWindowsCRUD
 	@Override
 	protected void defaultFocus()
 	{
-		editAddress.focus();
+		editOrder.focus();
 	}
 
 	@Override

@@ -45,6 +45,7 @@ public class Parameter extends BaseDto
 	public static final long PAR_MAX_ROWS_EXPORTED						= 22;
 
 	public static final long PAR_LOG_DEFAULT							= 23;
+	public static final long PAR_HOURS_PER_PERIOD						= 24;
 	
 	private String description;
 	private String value;

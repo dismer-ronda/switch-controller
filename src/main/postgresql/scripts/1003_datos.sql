@@ -34,6 +34,11 @@ insert into rights (id, code, description) values (17, 'configuration.interrupto
 insert into rights (id, code, description) values (18, 'configuration.interruptors.modify','Modify interruptor');
 insert into rights (id, code, description) values (19, 'configuration.interruptors.delete','Delete interruptor');
 
+insert into rights (id, code, description) values (20, 'configuration.holidays','Holiday');
+insert into rights (id, code, description) values (21, 'configuration.holidays.add','Add holiday');
+insert into rights (id, code, description) values (22, 'configuration.holidays.modify','Modify holiday');
+insert into rights (id, code, description) values (23, 'configuration.holidays.delete','Delete holiday');
+
 insert into profiles_rights (ref_profile, ref_right) values (0, 1);
 insert into profiles_rights (ref_profile, ref_right) values (0, 2);
 insert into profiles_rights (ref_profile, ref_right) values (0, 3);
@@ -49,6 +54,14 @@ insert into profiles_rights (ref_profile, ref_right) values (0, 12);
 insert into profiles_rights (ref_profile, ref_right) values (0, 13);
 insert into profiles_rights (ref_profile, ref_right) values (0, 14);
 insert into profiles_rights (ref_profile, ref_right) values (0, 15);
+insert into profiles_rights (ref_profile, ref_right) values (0, 16);
+insert into profiles_rights (ref_profile, ref_right) values (0, 17);
+insert into profiles_rights (ref_profile, ref_right) values (0, 18);
+insert into profiles_rights (ref_profile, ref_right) values (0, 19);
+insert into profiles_rights (ref_profile, ref_right) values (0, 20);
+insert into profiles_rights (ref_profile, ref_right) values (0, 21);
+insert into profiles_rights (ref_profile, ref_right) values (0, 22);
+insert into profiles_rights (ref_profile, ref_right) values (0, 23);
 
 insert into profiles_rights (ref_profile, ref_right) values (1, 1);
 insert into profiles_rights (ref_profile, ref_right) values (1, 2);
@@ -56,6 +69,14 @@ insert into profiles_rights (ref_profile, ref_right) values (1, 3);
 insert into profiles_rights (ref_profile, ref_right) values (1, 4);
 insert into profiles_rights (ref_profile, ref_right) values (1, 5);
 insert into profiles_rights (ref_profile, ref_right) values (1, 6);
+insert into profiles_rights (ref_profile, ref_right) values (1, 16);
+insert into profiles_rights (ref_profile, ref_right) values (1, 17);
+insert into profiles_rights (ref_profile, ref_right) values (1, 18);
+insert into profiles_rights (ref_profile, ref_right) values (1, 19);
+insert into profiles_rights (ref_profile, ref_right) values (1, 20);
+insert into profiles_rights (ref_profile, ref_right) values (1, 21);
+insert into profiles_rights (ref_profile, ref_right) values (1, 22);
+insert into profiles_rights (ref_profile, ref_right) values (1, 23);
 
 ---------------------------------------------    
 -- users 
@@ -95,3 +116,5 @@ insert into parameters (id, description, value, display_order) values (21, 'Char
 insert into parameters (id, description, value, display_order) values (22, 'Max number of rows to export', '1000', 63);
 
 insert into parameters (id, description, value, display_order) values (23, 'Log default', 'E', 71);
+
+insert into parameters (id, description, value, display_order) values (24, 'Hours per period', '4', 72);

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="es.pryades.smartswitch.dal.ibatis.FacilityHolidayMapper">
+
+	<insert id="addRow" parameterType="es.pryades.smartswitch.dto.FacilityHoliday">
+
+		insert into facility_holidays
+		(
+			ref_facility,
+			ref_holiday
+		)
+		values
+		(
+			#{ref_facility},
+			#{ref_holiday}
+		)
+	</insert>
+
+	<update id="delRow" parameterType="es.pryades.smartswitch.dto.FacilityHoliday">
+		delete from facility_holidays where ref_facility = #{ref_facility} and ref_holiday = #{ref_holiday} 
+	</update>
+</mapper>

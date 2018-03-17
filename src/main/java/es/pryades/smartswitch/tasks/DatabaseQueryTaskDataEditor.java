@@ -14,13 +14,13 @@ import com.vaadin.ui.VerticalLayout;
 
 import es.pryades.smartswitch.common.AppContext;
 import es.pryades.smartswitch.common.BaseException;
+import es.pryades.smartswitch.common.CommonEditor;
 import es.pryades.smartswitch.common.DialogLabel;
 import es.pryades.smartswitch.common.TaskActionDataEditor;
 import es.pryades.smartswitch.common.Utils;
 import es.pryades.smartswitch.dto.User;
 import es.pryades.smartswitch.dto.query.UserQuery;
 import es.pryades.smartswitch.ioc.IOCManager;
-import es.pryades.smartswitch.reports.CommonEditor;
 
 public class DatabaseQueryTaskDataEditor extends CommonEditor implements TaskActionDataEditor 
 {

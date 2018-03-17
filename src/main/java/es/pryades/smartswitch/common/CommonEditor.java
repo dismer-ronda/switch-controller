@@ -1,10 +1,9 @@
-package es.pryades.smartswitch.reports;
+package es.pryades.smartswitch.common;
 
 import java.io.Serializable;
 
 import com.vaadin.data.util.BeanItem;
 
-import es.pryades.smartswitch.common.AppContext;
 import lombok.Getter;
 import lombok.Setter;
 

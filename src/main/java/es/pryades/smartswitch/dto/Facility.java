@@ -24,4 +24,5 @@ public class Facility extends BaseDto
 	private Integer	enabled;
 	
 	private List<FacilityInterruptor> interruptors;
+	private List<FacilityHoliday> holidays;
 }

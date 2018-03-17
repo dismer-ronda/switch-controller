@@ -45,6 +45,7 @@ import es.pryades.smartswitch.vto.controlers.TaskControlerVto;
 public class TasksConfig extends PagedContent implements ModalParent
 {
 	private static final long serialVersionUID = -5428522530136369407L;
+	
 	private static final Logger LOG = Logger.getLogger( TasksConfig.class );
 
 	private ComboBox comboClazz;

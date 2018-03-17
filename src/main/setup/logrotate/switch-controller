@@ -1,8 +1,0 @@
-/var/log/switch-controller.log {
-  copytruncate
-  weekly
-  rotate 7
-  compress
-  missingok
-  create 640 root root
-}

@@ -5,11 +5,11 @@
     
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>es.pryades.smartswitch</groupId>
-	<artifactId>smartswitch</artifactId>
+	<artifactId>switch-controller</artifactId>
 	<version>1.0</version> 
 	<packaging>war</packaging>
   
-	<name>INDIGO application</name>
+	<name>Switch Controller application</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -89,133 +89,6 @@
 			  </executions>
 			</plugin>
 			
-			<plugin> <!-- Migration: formamos estructura de carpetas  -->
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.5</version>
-				
-				<executions>
-					
-					<execution>
-						<id>up-environments</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>target/${engine}/environments</outputDirectory>
-							<resources>
-								<resource>
-									<directory>src/main/${engine}/environments</directory>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-					
-					<execution>
-						<id>up-database</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>target/${engine}/scripts</outputDirectory>
-							<resources>
-								<resource>
-									<directory>src/main/${engine}/scripts</directory>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-
-					<execution>
-						<id>down-environments</id>
-						<phase>pre-clean</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>target/${engine}/environments</outputDirectory>
-							<resources>
-								<resource>
-									<directory>src/main/${engine}/environments</directory>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-					
-					<execution>
-						<id>down-database</id>
-						<phase>pre-clean</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>target/${engine}/scripts</outputDirectory>
-							<resources>
-								<resource>
-									<directory>src/main/${engine}/scripts</directory>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-
-				</executions>
-			</plugin>
-
-			<plugin> <!-- Migration: generamos bases de datos -->
-				<groupId>org.mybatis.maven</groupId>
-				<artifactId>maven-migration-plugin</artifactId>
-				<version>1.0.0</version>
-				
-				<executions>
-
-<!-- goals disabled 					
-				    				    					
-					<execution>
-						<id>database-up</id>
-						<phase>install</phase>
-						<goals>
-							<goal>up</goal>
-						</goals>
-						<configuration>
-							<repository>target/${engine}</repository>
-							<environment>${environment}</environment>
-						</configuration>
-					</execution>
-
-					<execution>
-						<id>database-down</id>
-						<phase>pre-clean</phase>
-						<goals>
-							<goal>down</goal>
-						</goals>
-						<configuration>
-							<repository>target/${engine}</repository>
-							<environment>${environment}</environment>
-							<downSteps>ALL</downSteps>
-						</configuration>
-					</execution>
--->					
-				</executions>
-
-				<dependencies>
-
-					<dependency>
-						<groupId>postgresql</groupId>
-						<artifactId>postgresql</artifactId>
-						<version>9.1-901.jdbc4</version>
-					</dependency>
-
-					<dependency>
-					    <groupId>net.sourceforge.jtds</groupId>
-					    <artifactId>jtds</artifactId>
-					    <version>1.3.1</version>
-					</dependency>
-					
-				</dependencies>
-
-			</plugin>	        
 
         </plugins>
         
@@ -280,28 +153,6 @@
 		</pluginManagement>
 	</build>
 
-	<reporting> 
-   		<plugins> 
-	    	<plugin> 
-		        <groupId>com.wakaleo.schemaspy</groupId> 
-		        <artifactId>maven-schemaspy-plugin</artifactId> 
-		        <version>1.0.3</version> 
-		        <configuration> 
-		              <databaseType>pgsql</databaseType> 
-		              <database>indigo</database> 
-		              <schema>public</schema> 
-		              <host>localhost</host> 
-		              <user>indigo</user> 
-		              <password>secreto</password>
-						<highQuality>true</highQuality>
-						<noLogo>true</noLogo>
-						<noAds>true</noAds>
-						<encoding>UTF-8</encoding>
-		        </configuration> 
-	      	</plugin> 
-   		</plugins> 
-	</reporting>
-		
 	<repositories>
         <repository>
             <id>vaadin-addons</id>
@@ -411,23 +262,11 @@
     	</dependency>
     
 		<dependency>
-			<groupId>org.apache.velocity</groupId>
-			<artifactId>velocity</artifactId>
-			<version>1.7</version>
-		</dependency>
-            
-		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>1.3.2</version>
 		</dependency>
  
-       	<dependency>
-		    <groupId>org.xhtmlrenderer</groupId>
-		    <artifactId>flying-saucer-pdf-itext5</artifactId>
-		    <version>9.0.1</version>
-		</dependency>
-	
 		<dependency>
 			<groupId>postgresql</groupId>
 			<artifactId>postgresql</artifactId>
@@ -435,12 +274,6 @@
 		</dependency>
 
 		<!-- mvn install:install-file -Dfile=Descargas/jtds-1.3.1.jar -Dpackaging=jar -DgroupId=net.sourceforge.jtds -DartifactId=jtds -Dversion=1.3.1 -->
-
-		<dependency>
-		    <groupId>net.sourceforge.jtds</groupId>
-		    <artifactId>jtds</artifactId>
-		    <version>1.3.1</version>
-		</dependency>
 
 	    <dependency>
         	<groupId>com.vaadin</groupId>
@@ -467,25 +300,19 @@
 		</dependency>
 						
 		<dependency>
-		   <groupId>com.vaadin.addon</groupId>
-		   <artifactId>vaadin-charts</artifactId>
-		   <version>${charts.version}</version>
-		</dependency>
-						
-		<dependency>
 		   <groupId>org.vaadin.addon</groupId>
 		   <artifactId>confirmdialog</artifactId>
 		   <version>${confirm.version}</version>
 		</dependency>
 
 <!-- Esta dependencia se necesita solamente para compilar widgetsets 
--->
 
 		<dependency>
 			<groupId>com.vaadin</groupId>
 		    <artifactId>vaadin-client-compiler</artifactId>
 		    <version>${vaadin.version}</version>
 		</dependency>
+-->
 
 <!--
 		<dependency>
@@ -539,11 +366,6 @@
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/net.sf.barcode4j/barcode4j -->
-		<dependency>
-		    <groupId>net.sf.barcode4j</groupId>
-		    <artifactId>barcode4j</artifactId>
-		    <version>2.1</version>
-		</dependency>
 
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
@@ -561,12 +383,6 @@
 		    <groupId>jcifs</groupId>
 		    <artifactId>jcifs</artifactId>
 		    <version>1.3.17</version>
-		</dependency>						
-		
-		<dependency>
-		    <groupId>com.independentsoft</groupId>
-		    <artifactId>jshare-prod</artifactId>
-		    <version>1.0</version>
 		</dependency>						
 	</dependencies>
 </project>

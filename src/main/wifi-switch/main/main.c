@@ -85,11 +85,11 @@ void working_task(void *p)
 		
 		if ( action != state )
 		{
-			ESP_LOGI(TAG_WORK, "setting GPIO0 %s...", state ? "on" : "off" );
-			io_relay( state );
-
 			state = action;
 			ESP_LOGI(TAG_WORK, "State changed to %s...", state ? "on" : "off" );
+
+			ESP_LOGI(TAG_WORK, "setting GPIO0 %s...", state ? "on" : "off" );
+			io_relay( state );
 		}
 		else
 			ESP_LOGI(TAG_WORK, "State mantains %s...", state ? "on" : "off" );

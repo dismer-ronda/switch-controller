@@ -3,6 +3,8 @@ package es.pryades.smartswitch.configuration.tabs;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Component;
@@ -11,7 +13,6 @@ import com.vaadin.ui.Notification;
 import es.pryades.smartswitch.common.AppContext;
 import es.pryades.smartswitch.common.BaseException;
 import es.pryades.smartswitch.common.BaseTable;
-import es.pryades.smartswitch.common.Constants;
 import es.pryades.smartswitch.common.GenericControlerVto;
 import es.pryades.smartswitch.common.ModalParent;
 import es.pryades.smartswitch.common.ModalWindowsCRUD.Operation;
@@ -19,6 +20,7 @@ import es.pryades.smartswitch.common.PagedContent;
 import es.pryades.smartswitch.common.PagedTable;
 import es.pryades.smartswitch.common.Utils;
 import es.pryades.smartswitch.configuration.modals.ModalNewFacility;
+import es.pryades.smartswitch.configuration.modals.SetFacilityHolidaysDlg;
 import es.pryades.smartswitch.configuration.modals.SetInterruptorsPlanDlg;
 import es.pryades.smartswitch.dal.BaseManager;
 import es.pryades.smartswitch.dto.BaseDto;
@@ -40,8 +42,11 @@ public class FacilitiesConfig extends PagedContent implements ModalParent
 {
 	private static final long serialVersionUID = 8089533562917005805L;
 
+	private static final Logger LOG = Logger.getLogger( FacilitiesConfig.class );
+
 	private Button bttnPlanLabor;
 	private Button bttnPlanFree;
+	private Button bttnHolidays;
 	
 	public FacilitiesConfig( AppContext ctx )
 	{
@@ -51,7 +56,7 @@ public class FacilitiesConfig extends PagedContent implements ModalParent
 	@Override
 	public String getResourceKey()
 	{
-		return "groupInterruptorsConfig";
+		return "facilitiesConfig";
 	}
 
 	@Override
@@ -156,8 +161,7 @@ public class FacilitiesConfig extends PagedContent implements ModalParent
 	{
 		List<Component> ops = super.getCustomOperations();
 		
-		bttnPlanLabor = new Button( getContext().getString( "modalNewFacility.plan.labor" ) );
-		bttnPlanLabor.setWidth( Constants.DEFAULT_BUTTON_WIDTH );
+		bttnPlanLabor = new Button( getContext().getString( "facilitiesConfig.plan.labor" ) );
 		bttnPlanLabor.setEnabled( false );
 		bttnPlanLabor.addClickListener( new Button.ClickListener()
 		{
@@ -172,8 +176,7 @@ public class FacilitiesConfig extends PagedContent implements ModalParent
 			}
 		} );
 	
-		bttnPlanFree = new Button( getContext().getString( "modalNewFacility.plan.free" ) );
-		bttnPlanFree.setWidth( Constants.DEFAULT_BUTTON_WIDTH );
+		bttnPlanFree = new Button( getContext().getString( "facilitiesConfig.plan.free" ) );
 		bttnPlanFree.setEnabled( false );
 		bttnPlanFree.addClickListener( new Button.ClickListener()
 		{
@@ -188,8 +191,24 @@ public class FacilitiesConfig extends PagedContent implements ModalParent
 			}
 		} );
 
+		bttnHolidays = new Button( getContext().getString( "facilitiesConfig.holidays" ) );
+		bttnHolidays.setEnabled( false );
+		bttnHolidays.addClickListener( new Button.ClickListener()
+		{
+			private static final long serialVersionUID = 5062404593595743332L;
+
+			public void buttonClick( ClickEvent event )
+			{
+				Long rowId = (Long)getTable().getTable().getValue();
+				
+				if ( rowId != null)
+					onHolidays( rowId );
+			}
+		} );
+		
 		ops.add( bttnPlanLabor );
 		ops.add( bttnPlanFree );
+		ops.add( bttnHolidays );
 	
 		return ops;
 	}
@@ -239,5 +258,23 @@ public class FacilitiesConfig extends PagedContent implements ModalParent
 		
 		bttnPlanLabor.setEnabled( enabled );
 		bttnPlanFree.setEnabled( enabled );
+		bttnHolidays.setEnabled( enabled );
+	}
+
+	protected void onHolidays( Long rowId )
+	{
+		try
+		{
+			Facility facility = (Facility)getTable().getRowValue( rowId );
+		
+			SetFacilityHolidaysDlg dlg = new SetFacilityHolidaysDlg( facility, FacilitiesConfig.this );
+			dlg.setContext( getContext() );
+			dlg.createComponents();
+			getUI().addWindow( dlg );
+		}
+		catch ( Throwable e )
+		{
+			Utils.logException( e, LOG );
+		}
 	}
 }

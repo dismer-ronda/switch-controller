@@ -102,14 +102,6 @@ create table tasks (
 create index ix_tasks_clazz on tasks(clazz);
 create index ix_tasks_system on tasks(system);
 
--- free days     
-create table free_days (
-    id integer not null,
-    name varchar(32) not null, 
-	thedate integer not null,
-    constraint pk_free_days primary key(id)
-    );
-
 -- interruptors
 create table interruptors (
     id integer not null,
@@ -130,7 +122,7 @@ create table interruptors (
     constraint uk_interruptors_name unique (name)    
     );
 
--- grupo de interruptores
+-- instalaciones
 create table facilities (
     id integer not null,
     list_order integer not null,
@@ -148,11 +140,32 @@ create table facility_interruptors (
     ref_facility bigint not null,
     ref_interruptor bigint not null,
     
-    constraint pk_facility_interruptors_interruptor primary key(ref_facility, ref_interruptor),
+    constraint pk_facility_interruptors primary key(ref_facility, ref_interruptor),
     
     constraint fk_facility_interruptors_facility foreign key (ref_facility) references facilities(id) on delete cascade,
     constraint fk_facility_interruptors_interruptor foreign key (ref_interruptor) references interruptors(id) on delete cascade
     );
 
+-- holidays
+create table holidays (
+    id integer not null,
+    holiday_type integer not null,  			-- 0 - Day Of Week, 1 - Day of Month, 2 - Month, Fixed - yyyyMMdd 
+	holiday_name varchar(64) not null,   	
+    holiday_value varchar(32) not null,
+
+    constraint pk_holidays primary key(id),
+    constraint uk_holidays_name unique (holiday_name),    
+    constraint uk_holidays_name_value unique (holiday_type, holiday_value)    
+    );
+    
+create table facility_holidays (
+    ref_facility bigint not null,
+    ref_holiday bigint not null,
+    
+    constraint pk_facility_holidays primary key(ref_facility, ref_holiday),
+    
+    constraint fk_facility_holidays_facility foreign key (ref_facility) references facilities(id) on delete cascade,
+    constraint fk_facility_holidays_holiday foreign key (ref_holiday) references holidays(id) on delete cascade
+    );
 
 

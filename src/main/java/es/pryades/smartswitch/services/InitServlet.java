@@ -12,7 +12,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.RollingFileAppender;
-import org.apache.velocity.app.Velocity;
 
 import es.pryades.smartswitch.application.I18N;
 import es.pryades.smartswitch.common.AppContext;
@@ -71,9 +70,9 @@ public class InitServlet extends HttpServlet
 	    	if ( phantomjs != null )
 	    		System.setProperty( "phantom.exec", phantomjs );
 
-	    	Properties p = new Properties();
+	    	/*Properties p = new Properties();
 	    	p.setProperty("runtime.log.logsystem.class", "org.apache.velocity.runtime.log.NullLogSystem");
-	    	Velocity.init( p );
+	    	Velocity.init( p );*/
 
 			AppContext ctx = new AppContext( "es" );
 			IOCManager._ParametersManager.loadParameters( ctx );

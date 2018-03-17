@@ -192,6 +192,15 @@ public class CalendarUtils
 		return CalendarUtils.getCalendarTimeAsLong( calendar );
 	}
 
+	public static int getDateAsInt( Date date )
+	{
+		Calendar calendar = GregorianCalendar.getInstance();
+
+		calendar.setTime( date );
+						
+		return CalendarUtils.getCalendarTimeAsInt( calendar );
+	}
+
 	public static long getDateFromTimeZoneToUTC( Date date, String timezone )
 	{
 		long dateLong = getDateAsLong( date );
@@ -226,10 +235,10 @@ public class CalendarUtils
 		return CalendarUtils.getCalendarTimeAsLong( calendar );
 	}
 	
-	public static int getDateAsInt( Date date )
+	/*public static int getDateAsInt( Date date )
 	{
 		return getDateAsInt( date, "UTC" );
-	}
+	}*/
 	
 	public static int getDateAsInt( Date date, String timezone )
 	{
@@ -371,6 +380,40 @@ public class CalendarUtils
 		}
 	}
 
+	public static String getFormatedDate( Integer idate, String format )
+	{
+		try
+		{
+			Date date = new SimpleDateFormat( "yyyyMMdd" ).parse( Long.toString( idate ) );
+
+			Calendar cal = GregorianCalendar.getInstance();
+			cal.setTimeInMillis( date.getTime() );
+
+			return new SimpleDateFormat( format ).format( cal.getTime() );
+		}
+		catch ( Throwable e )
+		{
+			return Long.toString( idate );
+		}
+	}
+
+	public static String getFormatedDate( String sdate, String sourceFormat, String format )
+	{
+		try
+		{
+			Date date = new SimpleDateFormat( sourceFormat ).parse( sdate );
+
+			Calendar cal = GregorianCalendar.getInstance();
+			cal.setTimeInMillis( date.getTime() );
+
+			return new SimpleDateFormat( format ).format( cal.getTime() );
+		}
+		catch ( Throwable e )
+		{
+			return sdate;
+		}
+	}
+	
 	public static String getFormatedDate( Date date, String format )
 	{
 		Calendar cal = GregorianCalendar.getInstance();

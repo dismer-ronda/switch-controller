@@ -1,6 +1,7 @@
 package es.pryades.smartswitch.configuration.modals;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import lombok.Getter;
@@ -8,7 +9,6 @@ import lombok.Setter;
 
 import org.apache.log4j.Logger;
 
-import com.google.gwt.dev.util.collect.HashMap;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
@@ -19,6 +19,7 @@ import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Panel;
+import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.Table.Align;
 import com.vaadin.ui.VerticalLayout;
@@ -28,6 +29,7 @@ import es.pryades.smartswitch.common.AppContext;
 import es.pryades.smartswitch.common.Constants;
 import es.pryades.smartswitch.common.Utils;
 import es.pryades.smartswitch.dto.Interruptor;
+import es.pryades.smartswitch.dto.Parameter;
 import es.pryades.smartswitch.ioc.IOCManager;
 
 public class SetInterruptorsPlanDlg extends Window 
@@ -39,12 +41,13 @@ public class SetInterruptorsPlanDlg extends Window
 	@Getter @Setter private AppContext context;
 	@Getter private VerticalLayout mainLayout;
 	@Getter private VerticalLayout workLayout;
-	@Getter @Setter private Table table;
 	@Getter @Setter private List<Interruptor> interruptors;
 	private List<String> columns;
-	private HashMap<Long, Object> mapRows;
 	private boolean labor;
 	private double limit;
+	private TabSheet tabsheet;
+	private HashMap<Long, List<CheckBox>> mapChecks;
+	private List<Table> tables;
 
 	public SetInterruptorsPlanDlg( boolean labor, double limit )
 	{
@@ -68,8 +71,8 @@ public class SetInterruptorsPlanDlg extends Window
 
 		//setCloseShortcut( KeyCode.ESCAPE );
 		
-		setWidth( "1600px" ); 
-		setHeight( "800px" );
+		setWidth( "1200px" ); 
+		setHeight( "640px" );
 		
 		setContent( mainLayout = new VerticalLayout() );
 		
@@ -125,71 +128,107 @@ public class SetInterruptorsPlanDlg extends Window
 		mainLayout.setComponentAlignment( rowButtons, Alignment.BOTTOM_RIGHT );
 		mainLayout.setExpandRatio( panel, 1.0f );
 		
-		table = new Table();
-		table.setSizeFull();
+		tabsheet = new TabSheet();
+		tabsheet.setSizeFull();
 		
-		String column1 = getContext().getString( "SelectInterruptorsPlanDlg.interruptor" );
-		table.addContainerProperty( column1, String.class, null  );
-		table.setColumnAlignment( column1, Align.LEFT );
 		columns = new ArrayList<String>();
-
-		for ( int hour = 0; hour < 24; hour++ )
-    	{
-        	for ( int min = 0; min < 4; min++ )
-        	{
-        		String column = String.format( "%02d:%02d", hour, min * 15 );
-        		columns.add( column );
-        		
-        		table.addContainerProperty( column, CheckBox.class, null  );
-        		table.setColumnAlignment( column, Align.CENTER );
-        	}
-    	}
-
-		mapRows = new HashMap<Long, Object>();
+		//mapRows = new HashMap<Long, Object>();
+		
+		mapChecks = new HashMap<Long, List<CheckBox>>();
+		tables = new ArrayList<Table>();
 		
 		for ( Interruptor interruptor : interruptors )
+			mapChecks.put( interruptor.getId(), new ArrayList<CheckBox>() );
+		
+		try
 		{
-			Object tableItem = table.addItem();
-			mapRows.put( interruptor.getId(), tableItem );
+			int hours = getContext().getIntegerParameter( Parameter.PAR_HOURS_PER_PERIOD );
+			int periods = 24 / hours;
 			
-			Item row1 = table.getItem( tableItem );
-			
-			byte[] plan = labor ? interruptor.getPlan_labor() : interruptor.getPlan_free();
-			
-			for ( int hour = 0; hour < 24; hour++ )
+			for ( int period = 0; period < periods; period++ )
 			{
-        		row1.getItemProperty( column1 ).setValue( interruptor.getName() );
-	        	
-        		for ( int min = 0; min < 4; min++ )
-        		{
-    				String column = columns.get( hour * 4 + min  );
-    				
-    				CheckBox check = new CheckBox();
-    				check.setData( new Integer( hour * 4 + min ) );
-    				check.setValue( plan[hour * 4 + min] == 1 );
-	        		
-    				row1.getItemProperty( column ).setValue( check );
+				Table table = new Table();
+				table.setSizeFull();
+				
+				tables.add( table );
+				
+				String column1 = getContext().getString( "SelectInterruptorsPlanDlg.interruptor" );
+				table.addContainerProperty( column1, String.class, null  );
+				table.setColumnAlignment( column1, Align.LEFT );
+		
+				for ( int hour = 0; hour < hours; hour++ )
+		    	{
+		        	for ( int min = 0; min < 4; min++ )
+		        	{
+		        		String column = String.format( "%02d:%02d", period * hours + hour, min * 15 );
+		        		columns.add( column );
+		        		
+		        		table.addContainerProperty( column, CheckBox.class, null  );
+		        		table.setColumnAlignment( column, Align.CENTER );
+		        		table.setColumnWidth( column, 48 );
+		        	}
+		    	}
+		
+				for ( Interruptor interruptor : interruptors )
+				{
+					Object tableItem = table.addItem();
 
-    				check.addValueChangeListener( new Property.ValueChangeListener() {
-						private static final long serialVersionUID = 6680388383216397510L;
+					List<CheckBox> listChecks = mapChecks.get( interruptor.getId() );
+					
+					Item row1 = table.getItem( tableItem );
+					
+					byte[] plan = labor ? interruptor.getPlan_labor() : interruptor.getPlan_free();
+					
+					for ( int hour = 0; hour < hours; hour++ )
+					{
+		        		row1.getItemProperty( column1 ).setValue( interruptor.getName() );
+			        	
+		        		for ( int min = 0; min < 4; min++ )
+		        		{
+		        			int index = period * (4*hours) + (hour * 4) + min;
+		    				//LOG.info( "index = " + index + " period = " + period + " hour = " + hour + " min = " + min );
 
-						public void valueChange(ValueChangeEvent event) {
-							
-    		                onChangedColumn( (Integer)((CheckBox)event.getProperty()).getData() );
-    		            }
-    		        });
-    		        check.setImmediate(true);
-        		}
+		    				String column = columns.get(index);
+		    				
+		    				CheckBox check = new CheckBox();
+		    				check.setData( new Integer(index) );
+		    				check.setValue( plan[index] == 1 );
+			        		
+		    				row1.getItemProperty( column ).setValue( check );
+		    				
+		    				listChecks.add( check );
+		
+		    				check.addValueChangeListener( new Property.ValueChangeListener() {
+								private static final long serialVersionUID = 6680388383216397510L;
+		
+								public void valueChange(ValueChangeEvent event) {
+									
+		    		                onChangedColumn( (Integer)((CheckBox)event.getProperty()).getData() );
+		    		            }
+		    		        });
+		    		        check.setImmediate(true);
+		        		}
+					}
+				}
+		
+				table.setFooterVisible(true);
+		
+				table.setColumnFooter( column1, getContext().getString( "words.total.kw" ) );
+				for ( int i = 0; i < columns.size(); i++ )
+					table.setColumnFooter( columns.get( i ), String.valueOf( getColumnTotal( i ) ) );
+					
+				tabsheet.addTab( table, period );
+				tabsheet.getTab( period ).setCaption( String.format( "%02d:00 - %02d:45", period * hours, (period+1) * hours - 1 ) );
 			}
 		}
-
-		table.setFooterVisible(true);
-
-		table.setColumnFooter( column1, getContext().getString( "words.total.kw" ) );
-		for ( int i = 0; i < columns.size(); i++ )
-			table.setColumnFooter( columns.get( i ), String.valueOf( getColumnTotal( i ) ) );
+		catch ( Throwable e )
+		{
+			e.printStackTrace();
+		}
 			
-		getWorkLayout().addComponent( table );
+		tabsheet.setSelectedTab( 0 );
+		
+		getWorkLayout().addComponent( tabsheet );
 
 		center();
 	}	
@@ -199,11 +238,11 @@ public class SetInterruptorsPlanDlg extends Window
 		double sum = 0;
 		for ( Interruptor interruptor : interruptors )
 		{
-			Item row = table.getItem( mapRows.get( interruptor.getId() ) );
+			List<CheckBox> checksInterruptor = mapChecks.get( interruptor.getId() );
 			
-			if ( row != null )
+			if ( checksInterruptor != null )
 			{
-				CheckBox check = (CheckBox)row.getItemProperty( columns.get( column ) ).getValue();
+				CheckBox check = (CheckBox)checksInterruptor.get( column );
 				
 				if ( check != null )
 					if ( check.getValue().booleanValue() )
@@ -218,28 +257,17 @@ public class SetInterruptorsPlanDlg extends Window
 	{
 		for ( Interruptor interruptor : interruptors )
 		{
-			Item row = table.getItem( mapRows.get( interruptor.getId() ) );
+			List<CheckBox> checksInterruptor = mapChecks.get( interruptor.getId() );
 			
-			if ( row != null )
+			if ( checksInterruptor != null )
 			{
 				try
 				{
 					Interruptor clone = (Interruptor)Utils.clone( interruptor );
 	
 					byte [] plan = new byte[96];
-					
-					for ( int hour = 0; hour < 24; hour++ )
-					{
-		        		for ( int min = 0; min < 4; min++ )
-		        		{
-		    				String column = columns.get( hour * 4 + min );
-			        		
-		    				if ( ((CheckBox)row.getItemProperty( column ).getValue()).getValue().booleanValue() )
-		    					plan[hour*4+min] = 1;
-		    				else	
-		    					plan[hour*4+min] = 0;
-		        		}
-					}
+					for ( int i = 0; i < 96; i++ )
+						plan[i] = checksInterruptor.get(i).getValue().booleanValue() ? (byte)1 : 0;
 
 					if ( labor )
 						interruptor.setPlan_labor( plan );
@@ -265,9 +293,16 @@ public class SetInterruptorsPlanDlg extends Window
 	
 	private void onChangedColumn( Integer column )
 	{
+		int hours = getContext().getIntegerParameter( Parameter.PAR_HOURS_PER_PERIOD );
+		
 		double total = getColumnTotal( column );
+		
+		int tableIndex = column / (hours *4);
+		
+		Table table = tables.get( tableIndex );
 		table.setColumnFooter( columns.get( column ), String.valueOf( total ) );
+		
 		if ( total > limit )
-			Utils.showNotification( getContext(), getContext().getString( "words.exceded" ) + Math.abs( limit - total ), Notification.Type.WARNING_MESSAGE );
+			Utils.showNotification( getContext(), getContext().getString( "words.exceded" ) + Utils.roundDouble( Math.abs( limit - total ), 2 ), Notification.Type.WARNING_MESSAGE );
 	}
 }

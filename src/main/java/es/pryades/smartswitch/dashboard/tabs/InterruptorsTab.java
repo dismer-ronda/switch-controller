@@ -86,6 +86,7 @@ public class InterruptorsTab extends DashboardTab implements VtoControllerFactor
 		return mainLayout;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void refreshContent()
 	{
 		try
@@ -126,7 +127,7 @@ public class InterruptorsTab extends DashboardTab implements VtoControllerFactor
 					
 					Label label2 = new Label();
 					label2.setWidth( "100%" );
-					label2.setValue( lastAlive != null ? CalendarUtils.getFormatedDate( lastAlive, "HH:mm:ss" ) : getContext().getString( "interruptorsTab.not.yet.connected" ) );
+					label2.setValue( lastAlive != null ? CalendarUtils.getFormatedDate( lastAlive, "yyyy-MM-dd HH:mm:ss" ) : getContext().getString( "interruptorsTab.not.yet.connected" ) );
 					
 					column.addComponent( label1 );
 					column.setComponentAlignment( label1, Alignment.MIDDLE_CENTER );

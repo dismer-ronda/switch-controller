@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 
 import es.pryades.smartswitch.common.AppContext;
 import es.pryades.smartswitch.common.BaseException;
+import es.pryades.smartswitch.common.CommonEditor;
 import es.pryades.smartswitch.common.Constants;
 import es.pryades.smartswitch.common.TaskAction;
 import es.pryades.smartswitch.common.Utils;
@@ -18,7 +19,6 @@ import es.pryades.smartswitch.dto.Parameter;
 import es.pryades.smartswitch.dto.Task;
 import es.pryades.smartswitch.dto.User;
 import es.pryades.smartswitch.ioc.IOCManager;
-import es.pryades.smartswitch.reports.CommonEditor;
 
 public class DatabaseUpdateTaskAction implements TaskAction, Serializable
 {

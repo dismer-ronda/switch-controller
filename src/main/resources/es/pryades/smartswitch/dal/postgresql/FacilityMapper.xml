@@ -22,7 +22,19 @@
 		</association>
 	</resultMap>
     
-    <resultMap id="mapFacility" type="es.pryades.smartswitch.dto.Facility">
+	<resultMap id="mapFacilityHoliday" type="es.pryades.smartswitch.dto.FacilityHoliday">
+		<result property="ref_facility" column="ref_facility"/>
+		<result property="ref_holiday" column="ref_holiday"/>
+
+		<association property="holiday" javaType="es.pryades.smartswitch.dto.Holiday">
+			<id property="id" column="holiday_id"/>
+			<result property="holiday_name" column="holiday_holiday_name"/>
+			<result property="holiday_type" column="holiday_holiday_type"/>
+			<result property="holiday_value" column="holiday_holiday_value"/>
+		</association>
+	</resultMap>
+	
+	<resultMap id="mapFacility" type="es.pryades.smartswitch.dto.Facility">
 		<id property="id" column="id"/>
 		<result property="list_order" column="list_order"/>
 		<result property="name" column="name"/>
@@ -31,6 +43,7 @@
 		<result property="enabled" column="enabled"/>
 			
 		<collection property="interruptors" column="id" ofType="mapFacilityInterruptor" select="selectFacilityInterruptor"> </collection>
+		<collection property="holidays" column="id" ofType="mapFacilityHoliday" select="selectFacilityHoliday"> </collection>
 	</resultMap>
     
 	<sql id="es.pryades.smartswitch.dal.ibatis.FacilityMapper.fields">
@@ -173,4 +186,25 @@
 		order by interruptors.list_order
 	</select>
 		
+	<select id="selectFacilityHoliday" parameterType="long" resultMap="mapFacilityHoliday">
+		select 
+			facility_holidays.ref_facility,
+			facility_holidays.ref_holiday,
+		
+			holidays.id as holiday_id,
+			holidays.holiday_name as holiday_holiday_name,
+			holidays.holiday_type as holiday_holiday_type,
+			holidays.holiday_value as holiday_holiday_value
+				
+		from facility_holidays
+		 		
+		inner join holidays
+		on facility_holidays.ref_holiday = holidays.id
+		
+		where 
+			facility_holidays.ref_facility=#{id} 
+			
+		order by holidays.holiday_type, holidays.holiday_value
+	</select>
+
 </mapper>

@@ -376,6 +376,7 @@ public class ModalNewFacility extends ModalWindowsCRUD implements ModalParent
 			Facility temp = (Facility)IOCManager._FacilitiesManager.getRow( getContext(), query );
 			
 			newFacility.setInterruptors( temp.getInterruptors() );
+			newFacility.setHolidays( temp.getHolidays() );
 		}
 		catch ( Throwable e )
 		{

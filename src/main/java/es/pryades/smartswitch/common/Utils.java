@@ -63,10 +63,7 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
 
 import org.apache.log4j.Logger;
-import org.krysalis.barcode4j.impl.code128.Code128Bean;
-import org.krysalis.barcode4j.output.bitmap.BitmapCanvasProvider;
 
-import com.vaadin.addon.charts.model.style.SolidColor;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Image;
@@ -2121,24 +2118,6 @@ public class Utils
 		return 0;
 	}
 
-	public static List<SolidColor> getLindeColors()
-	{
-		List<SolidColor> colors = new ArrayList<SolidColor>();
-		
-		colors.add( new SolidColor( 0x00, 0x8A, 0xC4 ) );
-		colors.add( new SolidColor( 0x42, 0x81, 0xAF ) ); 
-		colors.add( new SolidColor( 0x7B, 0xA0, 0xC5 ) );
-		colors.add( new SolidColor( 0xB1, 0xC4, 0xDC ) );
-		colors.add( new SolidColor( 0x02, 0x3B, 0x5A ) );
-		colors.add( new SolidColor( 0x39, 0x60, 0x83 ) );
-		colors.add( new SolidColor( 0x68, 0x84, 0xA3 ) );
-		colors.add( new SolidColor( 0xA1, 0xB1, 0xC7 ) );
-		colors.add( new SolidColor( 0x00, 0x5D, 0x64 ) );
-		colors.add( new SolidColor( 0x6B, 0x92, 0xA7 ) );
-
-		return colors;
-	}
-	
 	public static String getDotedVersion( String version )
 	{
 		try 
@@ -2542,31 +2521,6 @@ public class Utils
 		notification.show( Page.getCurrent() );*/
 		
 		Notification.show( text + (type.equals( Notification.Type.ERROR_MESSAGE ) ? "\n" + ctx.getString( "words.click.escape" ) : ""), type );
-	}
-	
-	public static Image getBarcode( String text )
-	{
-    	try
-    	{
-        	Code128Bean code128 = new Code128Bean();
-        	code128.setHeight(15f);
-        	code128.setModuleWidth(0.3);
-        	code128.setQuietZone(10);
-        	code128.doQuietZone(true);
-
-	    	ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	    	BitmapCanvasProvider canvas = new BitmapCanvasProvider(baos, "image/x-png", 150, BufferedImage.TYPE_BYTE_BINARY, false, 0);
-	    	code128.generateBarcode( canvas, text );
-	    	canvas.finish();
-	
-	    	return new Image( null, new StreamResource( new ByteStreamStreamResource( baos.toByteArray() ), "barcode" ) );
-    	}
-    	catch( Throwable e )
-    	{
-    		Utils.logException( e, LOG );
-    	}
-    	
-    	return null;
 	}
 	
 	public static List<String> getListOfFiles( String directory, FilenameFilter filter )

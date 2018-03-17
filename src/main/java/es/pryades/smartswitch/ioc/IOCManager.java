@@ -6,9 +6,11 @@ import java.io.Serializable;
 import org.apache.tapestry5.ioc.Registry;
 import org.apache.tapestry5.ioc.RegistryBuilder;
 
+import es.pryades.smartswitch.dal.FacilityHolidaysManager;
 import es.pryades.smartswitch.dal.FilesManager;
 import es.pryades.smartswitch.dal.FacilityInterruptorsManager;
 import es.pryades.smartswitch.dal.FacilitiesManager;
+import es.pryades.smartswitch.dal.HolidaysManager;
 import es.pryades.smartswitch.dal.InterruptorsManager;
 import es.pryades.smartswitch.dal.ParametersManager;
 import es.pryades.smartswitch.dal.ProfilesManager;
@@ -45,6 +47,8 @@ public class IOCManager  implements Serializable
 	public static InterruptorsManager _InterruptorsManager;
 	public static FacilitiesManager _FacilitiesManager;
 	public static FacilityInterruptorsManager _FacilityInterruptorsManager;
+	public static HolidaysManager _HolidaysManager;
+	public static FacilityHolidaysManager _FacilityHolidaysManager;
 
 	public IOCManager() 
 	{
@@ -90,6 +94,8 @@ public class IOCManager  implements Serializable
 		_InterruptorsManager = (InterruptorsManager)getInstanceOf( InterruptorsManager.class );
 		_FacilitiesManager = (FacilitiesManager)getInstanceOf( FacilitiesManager.class );
 		_FacilityInterruptorsManager = (FacilityInterruptorsManager)getInstanceOf( FacilityInterruptorsManager.class );
+		_HolidaysManager = (HolidaysManager)getInstanceOf( HolidaysManager.class );
+		_FacilityHolidaysManager = (FacilityHolidaysManager)getInstanceOf( FacilityHolidaysManager.class );
 	}
 	
 	/**

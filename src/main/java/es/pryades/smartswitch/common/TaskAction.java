@@ -1,7 +1,6 @@
 package es.pryades.smartswitch.common;
 
 import es.pryades.smartswitch.dto.Task;
-import es.pryades.smartswitch.reports.CommonEditor;
 
 public interface TaskAction 
 {

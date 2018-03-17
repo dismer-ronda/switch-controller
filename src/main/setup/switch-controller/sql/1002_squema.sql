@@ -124,12 +124,13 @@ create table interruptors (
 
     enabled integer not null default 1,
     state integer,
+    last_signal bigint,
 
     constraint pk_interruptors primary key(id),
     constraint uk_interruptors_name unique (name)    
     );
 
--- grupo de interruptores
+-- instalaciones
 create table facilities (
     id integer not null,
     list_order integer not null,
@@ -147,11 +148,31 @@ create table facility_interruptors (
     ref_facility bigint not null,
     ref_interruptor bigint not null,
     
-    constraint pk_facility_interruptors_interruptor primary key(ref_facility, ref_interruptor),
+    constraint pk_facility_interruptors primary key(ref_facility, ref_interruptor),
     
     constraint fk_facility_interruptors_facility foreign key (ref_facility) references facilities(id) on delete cascade,
     constraint fk_facility_interruptors_interruptor foreign key (ref_interruptor) references interruptors(id) on delete cascade
     );
 
+-- holidays
+create table holidays (
+    id integer not null,
+	name varchar(64) not null,   	
+    from_date integer,
+    to_date integer,
+
+    constraint pk_holidays primary key(id),
+    constraint uk_holidays_name unique (name)    
+    );
+
+create table facility_holidays (
+    ref_facility bigint not null,
+    ref_holiday bigint not null,
+    
+    constraint pk_facility_holidays primary key(ref_facility, ref_holiday),
+    
+    constraint fk_facility_holidays_facility foreign key (ref_facility) references facilities(id) on delete cascade,
+    constraint fk_facility_holidays_holiday foreign key (ref_holiday) references holidays(id) on delete cascade
+    );
 
 
