@@ -143,7 +143,7 @@ void app_main()
 	}
 
 	int retries = 3;
-	while ( retries )
+	while ( 1 )
 	{
 		if ( synchronizeTime( config ) )
 			break;
@@ -156,7 +156,7 @@ void app_main()
 	}
 
 	retries = 3;
-	while ( retries )
+	while ( 1 )
 	{
 		if ( getWorkingPlan( config, plan ) )
 			break;

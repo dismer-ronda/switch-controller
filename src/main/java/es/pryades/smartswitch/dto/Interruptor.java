@@ -1,5 +1,7 @@
 package es.pryades.smartswitch.dto;
 
+import java.util.List;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -28,4 +30,6 @@ public class Interruptor extends BaseDto
 	
 	private Integer state;
 	private Long last_signal;
+	
+	private List<Holiday> holidays;
 }

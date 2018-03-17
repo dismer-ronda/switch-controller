@@ -3,6 +3,29 @@
 
 <mapper namespace="es.pryades.smartswitch.dal.ibatis.InterruptorMapper">
 
+	<resultMap id="mapInterruptor" type="es.pryades.smartswitch.dto.Interruptor">
+		<id property="id" column="id"/>
+		<result property="list_order" column="list_order"/>
+		<result property="name" column="name"/>
+		<result property="description" column="description"/>
+		<result property="address" column="address"/>
+		<result property="power" column="power"/>
+		<result property="plan_labor" column="plan_labor"/>
+		<result property="plan_free" column="plan_free"/>
+		<result property="enabled" column="enabled"/>
+		<result property="state" column="state"/>
+		<result property="last_signal" column="last_signal"/>
+					
+		<collection property="holidays" column="id" ofType="mapHoliday" select="selectInterruptorHolidays"> </collection>
+	</resultMap>
+    
+	<resultMap id="mapHoliday" type="es.pryades.smartswitch.dto.Holiday">
+		<id property="id" column="id"/>
+		<result property="holiday_name" column="holiday_name"/>
+		<result property="holiday_type" column="holiday_type"/>
+		<result property="holiday_value" column="holiday_value"/>
+	</resultMap>
+		
 	<sql id="es.pryades.smartswitch.dal.ibatis.InterruptorMapper.fields">
 		interruptors.id, 
 		interruptors.list_order,
@@ -69,7 +92,7 @@
 		   	interruptors.list_order
 	</select>
 
-	<select id="getRow" parameterType="es.pryades.smartswitch.dto.Interruptor" resultType="es.pryades.smartswitch.dto.Interruptor">
+	<select id="getRow" parameterType="es.pryades.smartswitch.dto.Interruptor" resultMap="mapInterruptor">
 		select
     		<include refid="es.pryades.smartswitch.dal.ibatis.InterruptorMapper.fields" />
 						
@@ -133,4 +156,30 @@
 		delete from interruptors where id = #{id}
 	</update>
 
+	<select id="selectInterruptorHolidays" parameterType="long" resultMap="mapHoliday">
+		select 
+			holidays.id as id,
+			holidays.holiday_name as holiday_name,
+			holidays.holiday_type as holiday_type,
+			holidays.holiday_value as holiday_value
+				
+		from holidays
+		 		
+		inner join facility_holidays
+		on facility_holidays.ref_holiday = holidays.id
+
+		inner join facilities
+		on facility_holidays.ref_facility = facilities.id
+		
+		inner join facility_interruptors
+		on facility_interruptors.ref_facility = facilities.id
+		
+		inner join interruptors
+		on facility_interruptors.ref_interruptor = interruptors.id
+		
+		where 
+			facility_interruptors.ref_interruptor = #{id}
+					
+		order by holidays.holiday_type, holidays.holiday_value
+	</select>
 </mapper>

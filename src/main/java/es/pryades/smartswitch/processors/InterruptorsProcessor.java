@@ -2,7 +2,9 @@ package es.pryades.smartswitch.processors;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 
 import org.apache.log4j.Logger;
@@ -12,6 +14,7 @@ import es.pryades.smartswitch.common.CalendarUtils;
 import es.pryades.smartswitch.common.Settings;
 import es.pryades.smartswitch.common.Status;
 import es.pryades.smartswitch.common.Utils;
+import es.pryades.smartswitch.dto.Holiday;
 import es.pryades.smartswitch.dto.Interruptor;
 import es.pryades.smartswitch.ioc.IOCManager;
 import es.pryades.smartswitch.transports.TcpServerTransport;
@@ -223,6 +226,112 @@ public class InterruptorsProcessor extends Thread
 				LOG.info( "interruptor " +  name + "not found" );
 	    }
 	    
+	    boolean isDayOfWeek( Calendar calendar, String value )
+	    {
+			int dow = calendar.get( Calendar.DAY_OF_WEEK );
+			
+			switch ( dow )
+			{
+				case Calendar.MONDAY:
+					return value.equals( "1" );
+
+				case Calendar.TUESDAY:
+					return value.equals( "2" );
+
+				case Calendar.WEDNESDAY:
+					return value.equals( "3" );
+
+				case Calendar.THURSDAY:
+					return value.equals( "4" );
+
+				case Calendar.FRIDAY:
+					return value.equals( "5" );
+					
+				case Calendar.SATURDAY:
+					return value.equals( "6" );
+
+				case Calendar.SUNDAY:
+					return value.equals( "7" );
+			}
+			
+			return false;
+	    }
+	    
+	    boolean isDayOfMonth( Calendar calendar, String value )
+	    {
+			int dom = calendar.get( Calendar.DAY_OF_MONTH );
+			int month = calendar.get( Calendar.MONTH ) + 1;
+			
+			return String.format( "%02d%02d", month, dom ).equals( value );
+	    }
+	    
+	    boolean isMonth( Calendar calendar, String value )
+	    {
+			int month = calendar.get( Calendar.MONTH ) + 1;
+			
+			return String.format( "%d", month ).equals( value );
+	    }
+	    
+	    boolean isDate( Calendar calendar, String value )
+	    {
+			int dom = calendar.get( Calendar.DAY_OF_MONTH );
+			int month = calendar.get( Calendar.MONTH ) + 1;
+			int year = calendar.get( Calendar.YEAR );
+			
+			return String.format( "%04d%02d%02d", year, month, dom ).equals( value );
+	    }
+	    
+	    byte[] getTodayPlay( Interruptor interruptor )
+	    {
+			Calendar calendar = CalendarUtils.getServerCurrentCalendar();
+			
+			List<Holiday> holidays = interruptor.getHolidays();
+			
+			for ( Holiday holiday : holidays )
+			{
+				switch ( holiday.getHoliday_type() )
+				{
+					case 0:
+						if ( isDayOfWeek( calendar, holiday.getHoliday_value() ) )
+						{
+							LOG.info( "holiday plan for " + holiday.getHoliday_name() );
+
+							return interruptor.getPlan_free();
+						}
+					break;
+					
+					case 1:
+						if ( isDayOfMonth( calendar, holiday.getHoliday_value() ) )
+						{
+							LOG.info( "holiday plan for " + holiday.getHoliday_name() );
+
+							return interruptor.getPlan_free();
+						}
+					break;
+					
+					case 2:
+						if ( isMonth( calendar, holiday.getHoliday_value() ) )
+						{
+							LOG.info( "holiday plan for " + holiday.getHoliday_name() );
+
+							return interruptor.getPlan_free();
+						}
+					break;
+					
+					case 3:
+						if ( isDate( calendar, holiday.getHoliday_value() ) )
+						{
+							LOG.info( "holiday plan for " + holiday.getHoliday_name() );
+
+							return interruptor.getPlan_free();
+						}
+					break;
+				}
+			}
+			
+			return null;
+	    }
+	    
 	    private void sendPlan() throws Throwable
 	    {
 			AppContext ctx = new AppContext( "es" );
@@ -234,11 +343,22 @@ public class InterruptorsProcessor extends Thread
 			query.setName( name );
 			Interruptor interruptor = (Interruptor)IOCManager._InterruptorsManager.getRow( ctx, query );
 			
+			LOG.info(  "" + interruptor );
+			
 			if ( interruptor != null )
 			{
 				LOG.info( "interruptor found " + interruptor );
 				
-				transport.write( interruptor.getPlan_labor() );
+				byte[] plan = getTodayPlay( interruptor );
+				
+				if ( plan == null )
+				{
+					LOG.info( "labor plan" );
+					
+					plan = interruptor.getPlan_labor();
+				}
+				
+				transport.write( plan );
 				transport.write( 1 );
 				transport.flushOutput();
 			}
