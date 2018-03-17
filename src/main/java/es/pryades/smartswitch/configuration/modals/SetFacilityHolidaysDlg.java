@@ -37,7 +37,6 @@ public class SetFacilityHolidaysDlg extends Window
 
 	@Getter @Setter private AppContext context;
 	@Getter private VerticalLayout mainLayout;
-	@Getter private VerticalLayout workLayout;
 	private Facility facility;
 	private List<CheckBox> checks;
 	private ModalParent parent;
@@ -67,8 +66,8 @@ public class SetFacilityHolidaysDlg extends Window
 
 		//setCloseShortcut( KeyCode.ESCAPE );
 		
-		setWidth( "1600px" ); 
-		setHeight( "800px" );
+		setWidth( "720px" ); 
+		setHeight( "480px" );
 		
 		setContent( mainLayout = new VerticalLayout() );
 		
@@ -81,11 +80,6 @@ public class SetFacilityHolidaysDlg extends Window
 
 		panel.setSizeFull();
 		panel.setStyleName( "borderless light" );
-		
-		workLayout = new VerticalLayout();
-		workLayout.setSizeFull();
-		
-		panel.setContent( workLayout );
 		
 		HorizontalLayout rowButtons = new HorizontalLayout();
 		rowButtons.setSpacing( true );
@@ -111,8 +105,9 @@ public class SetFacilityHolidaysDlg extends Window
 		mainLayout.setExpandRatio( panel, 1.0f );
 		
 		CssLayout holidaysLayout = new CssLayout();
-		holidaysLayout.addStyleName( "widget" );
 		
+		panel.setContent( holidaysLayout );
+
 		try
 		{
 			Holiday query = new Holiday();
@@ -122,10 +117,13 @@ public class SetFacilityHolidaysDlg extends Window
 			
 			for ( Holiday holiday : holidays )
 			{
+				boolean checked = currentlyChecked( holiday );
+				
 				CheckBox cb = new CheckBox();
 				cb.setCaption( holiday.getHoliday_name() );
+				cb.setStyleName( checked ? "holiday-checked" : "holiday" );
+				cb.setValue( checked );
 				cb.setData( holiday );
-				cb.setValue( currentlyChecked( holiday ) );
 				cb.addValueChangeListener( new Property.ValueChangeListener() {
 					private static final long serialVersionUID = -7851085707155697875L;
 
@@ -145,20 +143,14 @@ public class SetFacilityHolidaysDlg extends Window
 			Utils.logException( e, LOG );
 		}
 			
-		getWorkLayout().addComponent( holidaysLayout );
-
 		center();
 	}	
 	
 	private boolean currentlyChecked( Holiday holiday )
 	{
-		LOG.info( holiday );
 		for ( FacilityHoliday fh : facility.getHolidays() )
-		{
-			LOG.info( fh );
 			if ( fh.getHoliday().getHoliday_type().equals( holiday.getHoliday_type() ) && fh.getHoliday().getHoliday_value().equals( holiday.getHoliday_value() ) )
 				return true;
-		}
 		
 		return false;
 	}
@@ -171,6 +163,8 @@ public class SetFacilityHolidaysDlg extends Window
 		{
 			if ( check.getValue().booleanValue() )
 			{
+				check.setStyleName( "holiday-checked" );
+
 				FacilityHoliday fh = new FacilityHoliday();
 				fh.setRef_facility( facility.getId() );
 				fh.setRef_holiday( holiday.getId() );
@@ -183,6 +177,8 @@ public class SetFacilityHolidaysDlg extends Window
 			}
 			else
 			{
+				check.setStyleName( "holiday" );
+
 				FacilityHoliday fh = new FacilityHoliday();
 				fh.setRef_facility( facility.getId() );
 				fh.setRef_holiday( holiday.getId() );

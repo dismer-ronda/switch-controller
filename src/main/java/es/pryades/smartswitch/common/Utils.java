@@ -64,9 +64,7 @@ import javax.mail.util.ByteArrayDataSource;
 
 import org.apache.log4j.Logger;
 
-import com.vaadin.server.StreamResource;
 import com.vaadin.ui.ComboBox;
-import com.vaadin.ui.Image;
 import com.vaadin.ui.Notification;
 
 import es.pryades.smartswitch.dto.User;

@@ -132,7 +132,6 @@ public class SetInterruptorsPlanDlg extends Window
 		tabsheet.setSizeFull();
 		
 		columns = new ArrayList<String>();
-		//mapRows = new HashMap<Long, Object>();
 		
 		mapChecks = new HashMap<Long, List<CheckBox>>();
 		tables = new ArrayList<Table>();
@@ -186,14 +185,16 @@ public class SetInterruptorsPlanDlg extends Window
 		        		for ( int min = 0; min < 4; min++ )
 		        		{
 		        			int index = period * (4*hours) + (hour * 4) + min;
-		    				//LOG.info( "index = " + index + " period = " + period + " hour = " + hour + " min = " + min );
 
 		    				String column = columns.get(index);
 		    				
+		    				boolean checked = (plan[index] == 1);
+		    				
 		    				CheckBox check = new CheckBox();
 		    				check.setData( new Integer(index) );
-		    				check.setValue( plan[index] == 1 );
-			        		
+		    				check.setValue( checked );
+							check.setStyleName( checked ? "hour-checked" : "hour" );
+		    				
 		    				row1.getItemProperty( column ).setValue( check );
 		    				
 		    				listChecks.add( check );
@@ -201,12 +202,15 @@ public class SetInterruptorsPlanDlg extends Window
 		    				check.addValueChangeListener( new Property.ValueChangeListener() {
 								private static final long serialVersionUID = 6680388383216397510L;
 		
-								public void valueChange(ValueChangeEvent event) {
+								public void valueChange(ValueChangeEvent event) 
+								{
+									CheckBox cb = (CheckBox)event.getProperty();
+									cb.setStyleName( cb.getValue().booleanValue() ? "hour-checked" : "hour" );
 									
-		    		                onChangedColumn( (Integer)((CheckBox)event.getProperty()).getData() );
+		    		                onChangedColumn( (Integer)cb.getData() );
 		    		            }
 		    		        });
-		    		        check.setImmediate(true);
+			        		check.setImmediate(true);
 		        		}
 					}
 				}

@@ -230,3 +230,25 @@ div.v-button-icon-on-top.v-button-borderless:focus .v-button-caption {
 .v-checkbox-only_valid {
 	display: inline;
 }
+
+.v-checkbox-holiday {
+	background: none;
+	text-align: center;
+	padding: 6px;
+	margin: 6px;
+}
+
+.v-checkbox-holiday-checked {
+	background: #2AA931;
+	text-align: center;
+	padding: 6px;
+	margin: 6px;
+}
+
+.v-checkbox-hour {
+	background: none;
+}
+
+.v-checkbox-hour-checked {
+	background: #2AA931;
+}

@@ -50,13 +50,13 @@ public class HolidayControlerVto extends GenericControlerVto
 						result.setHoliday_value( getContext().getString( "holiday.type.dow." + ((Holiday) dtoObj).getHoliday_value() ) );
 					break;
 					case 1:
-						result.setHoliday_value( CalendarUtils.getFormatedDate( ((Holiday) dtoObj).getHoliday_value(), "MMdd", "MMM-dd" ) );
+						result.setHoliday_value( CalendarUtils.getFormatedDate( ((Holiday) dtoObj).getHoliday_value(), "MMdd", "MMMMM-dd" ) );
 					break;
 					case 2:
-						result.setHoliday_value( CalendarUtils.getFormatedDate( ((Holiday) dtoObj).getHoliday_value(), "MM", "MMM" ) );
+						result.setHoliday_value( CalendarUtils.getFormatedDate( ((Holiday) dtoObj).getHoliday_value(), "MM", "MMMMM" ) );
 					break;
 					case 3:
-						result.setHoliday_value( CalendarUtils.getFormatedDate( Integer.parseInt( ((Holiday) dtoObj).getHoliday_value() ), "yyyy-MMM-dd" ) );
+						result.setHoliday_value( CalendarUtils.getFormatedDate( Integer.parseInt( ((Holiday) dtoObj).getHoliday_value() ), "dd MMMMM yyyy" ) );
 					break;
 				}
 			}
