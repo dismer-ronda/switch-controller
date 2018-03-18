@@ -1,25 +1,8 @@
-#include <string.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/event_groups.h"
-#include "esp_system.h"
-#include "esp_wifi.h"
-#include "esp_event_loop.h"
-#include "esp_log.h"
-#include "nvs_flash.h"
-
-#include "lwip/err.h"
-#include "lwip/sockets.h"
-#include "lwip/sys.h"
-#include "lwip/netdb.h"
-#include "lwip/dns.h"
-
-#include <time.h>
-#include <sys/time.h>
+#include "globals.h"
 
 #include "configuration.h"
 
-static const char *TAG_HTTP = "PROTOCOL";
+#define TAG_HTTP "PROTOCOL"
 
 const struct addrinfo hints = {
 	.ai_family = AF_INET,
@@ -59,7 +42,7 @@ int wCRCTable[] =
 	0X4100, 0X81C1, 0X8081, 0X4040 
 };
 
-int calculate_crc( char * data, int length )
+int calculate_crc( uint8_t * data, int length )
 {
 	int index;
 	int crc = 0xFFFF;
@@ -92,7 +75,7 @@ void hex_to_byte( char * src, char * dst )
 		dst[i/2] = (((uint8_t)hex_index( src[i] )) << 4) | hex_index( src[i+1] );
 }
 
-int read_buffer( int s, void * buffer, int size )
+int read_buffer( int s, uint8_t * buffer, int size )
 {
 	int pos = 0;
 	while ( size > 0 )
@@ -140,7 +123,7 @@ int getWorkingPlan( CONFIGURATION * config, uint8_t * plan )
 	}
 
 	addr = &((struct sockaddr_in *)res->ai_addr)->sin_addr;
-	ESP_LOGI(TAG_HTTP, "DNS lookup succeeded. IP=%s", inet_ntoa(*addr));
+	//ESP_LOGI(TAG_HTTP, "DNS lookup succeeded. IP=%s", inet_ntoa(*addr));
 
 	s = socket(res->ai_family, res->ai_socktype, 0);
 	if(s < 0) {
@@ -148,7 +131,7 @@ int getWorkingPlan( CONFIGURATION * config, uint8_t * plan )
 		freeaddrinfo(res);
 		return 0;
 	}
-	ESP_LOGI(TAG_HTTP, "... allocated socket");
+	//ESP_LOGI(TAG_HTTP, "... allocated socket");
 	
 	struct timeval tv;
 	tv.tv_sec = 3;
@@ -163,7 +146,7 @@ int getWorkingPlan( CONFIGURATION * config, uint8_t * plan )
 		return 0;
 	}
 
-	ESP_LOGI(TAG_HTTP, "... connected");
+	//ESP_LOGI(TAG_HTTP, "... connected");
 	freeaddrinfo(res);
 
 	uint8_t command[1] = { 1 };
@@ -213,7 +196,7 @@ int synchronizeTime( CONFIGURATION * config )
 	}
 
 	addr = &((struct sockaddr_in *)res->ai_addr)->sin_addr;
-	ESP_LOGI(TAG_HTTP, "DNS lookup succeeded. IP=%s", inet_ntoa(*addr));
+	//ESP_LOGI(TAG_HTTP, "DNS lookup succeeded. IP=%s", inet_ntoa(*addr));
 
 	s = socket(res->ai_family, res->ai_socktype, 0);
 	if(s < 0) {
@@ -221,7 +204,7 @@ int synchronizeTime( CONFIGURATION * config )
 		freeaddrinfo(res);
 		return 0;
 	}
-	ESP_LOGI(TAG_HTTP, "... allocated socket");
+	//ESP_LOGI(TAG_HTTP, "... allocated socket");
 	
 	struct timeval tv;
 	tv.tv_sec = 3;
@@ -236,7 +219,7 @@ int synchronizeTime( CONFIGURATION * config )
 		return 0;
 	}
 
-	ESP_LOGI(TAG_HTTP, "... connected");
+	//ESP_LOGI(TAG_HTTP, "... connected");
 	freeaddrinfo(res);
 
 	uint8_t command[1] = { 2 };
@@ -256,7 +239,7 @@ int synchronizeTime( CONFIGURATION * config )
 			return 0;
 		}
 
-		ESP_LOGI(TAG_HTTP, "epoch = %lX", epoch );
+		//ESP_LOGI(TAG_HTTP, "epoch = %lX", epoch );
 		
 		struct timeval now;
 		now.tv_sec = epoch;
@@ -289,7 +272,7 @@ int sendCurrentAddress( CONFIGURATION * config )
 	}
 
 	addr = &((struct sockaddr_in *)res->ai_addr)->sin_addr;
-	ESP_LOGI(TAG_HTTP, "DNS lookup succeeded. IP=%s", inet_ntoa(*addr));
+	//ESP_LOGI(TAG_HTTP, "DNS lookup succeeded. IP=%s", inet_ntoa(*addr));
 
 	s = socket(res->ai_family, res->ai_socktype, 0);
 	if(s < 0) {
@@ -297,7 +280,7 @@ int sendCurrentAddress( CONFIGURATION * config )
 		freeaddrinfo(res);
 		return 0;
 	}
-	ESP_LOGI(TAG_HTTP, "... allocated socket");
+	//ESP_LOGI(TAG_HTTP, "... allocated socket");
 	
 	struct timeval tv;
 	tv.tv_sec = 3;
@@ -312,7 +295,7 @@ int sendCurrentAddress( CONFIGURATION * config )
 		return 0;
 	}
 
-	ESP_LOGI(TAG_HTTP, "... connected");
+	//ESP_LOGI(TAG_HTTP, "... connected");
 	freeaddrinfo(res);
 
 	uint8_t command[1] = { 3 };
@@ -333,7 +316,7 @@ int sendCurrentAddress( CONFIGURATION * config )
     socklen_t local_sinlen = sizeof(local_sin);
 
     getsockname(s, (struct sockaddr*)&local_sin, &local_sinlen);
-	ESP_LOGI(TAG_HTTP, "local ip=%X", local_sin.sin_addr.s_addr );
+	//ESP_LOGI(TAG_HTTP, "local ip=%X", local_sin.sin_addr.s_addr );
     
 	if (write(s, &local_sin.sin_addr.s_addr, sizeof(local_sin.sin_addr.s_addr) ) < 0) {
 		ESP_LOGE(TAG_HTTP, "... command send failed");
@@ -368,7 +351,7 @@ int sendAliveSignal( CONFIGURATION * config, uint8_t state )
 	}
 
 	addr = &((struct sockaddr_in *)res->ai_addr)->sin_addr;
-	ESP_LOGI(TAG_HTTP, "DNS lookup succeeded. IP=%s", inet_ntoa(*addr));
+	//ESP_LOGI(TAG_HTTP, "DNS lookup succeeded. IP=%s", inet_ntoa(*addr));
 
 	s = socket(res->ai_family, res->ai_socktype, 0);
 	if(s < 0) {
@@ -376,7 +359,7 @@ int sendAliveSignal( CONFIGURATION * config, uint8_t state )
 		freeaddrinfo(res);
 		return 0;
 	}
-	ESP_LOGI(TAG_HTTP, "... allocated socket");
+	//ESP_LOGI(TAG_HTTP, "... allocated socket");
 	
 	struct timeval tv;
 	tv.tv_sec = 3;
@@ -391,7 +374,7 @@ int sendAliveSignal( CONFIGURATION * config, uint8_t state )
 		return 0;
 	}
 
-	ESP_LOGI(TAG_HTTP, "... connected");
+	//ESP_LOGI(TAG_HTTP, "... connected");
 	freeaddrinfo(res);
 
 	uint8_t command[1] = { 4 };
@@ -418,7 +401,7 @@ int sendAliveSignal( CONFIGURATION * config, uint8_t state )
     socklen_t local_sinlen = sizeof(local_sin);
 
     getsockname(s, (struct sockaddr*)&local_sin, &local_sinlen);
-	ESP_LOGI(TAG_HTTP, "local ip=%X", local_sin.sin_addr.s_addr );
+	//ESP_LOGI(TAG_HTTP, "local ip=%X", local_sin.sin_addr.s_addr );
     
 	if (write(s, &local_sin.sin_addr.s_addr, sizeof(local_sin.sin_addr.s_addr) ) < 0) {
 		ESP_LOGE(TAG_HTTP, "... command send failed");

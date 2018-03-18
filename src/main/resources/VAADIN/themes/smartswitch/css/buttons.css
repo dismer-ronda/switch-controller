@@ -69,7 +69,7 @@ div.v-button-borderless:active .v-button-caption,
 div.v-button-borderless.v-pressed .v-button-caption,
 div.v-button-borderless:focus .v-button-caption,
 div.v-button-icon-on-top.v-button-borderless:focus .v-button-caption {
-	padding: 0px;
+	padding-right: 6px;
 	border: 0px none;
 	margin: 0px;
 	color: black;

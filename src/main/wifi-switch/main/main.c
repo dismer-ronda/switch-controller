@@ -1,39 +1,14 @@
-#include <string.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/event_groups.h"
-#include "esp_system.h"
-#include "esp_wifi.h"
-#include "esp_event_loop.h"
-#include "esp_log.h"
-#include "nvs_flash.h"
-
-#include "lwip/err.h"
-#include "lwip/sockets.h"
-#include "lwip/sys.h"
-#include "lwip/netdb.h"
-#include "lwip/dns.h"
-
-#include <time.h>
-#include <sys/time.h>
-
-#include "driver/gpio.h"
+#include "globals.h"
 
 #include "wifi.h"
 #include "bluetooth.h"
 #include "configuration.h"
 #include "protocol.h"
+#include "critical.h"
+#include "io.h"
 
-static const char *TAG_MAIN = "MAIN";
-static const char *TAG_WORK = "WORK";
-
-#define GPIO_OUTPUT_IO_0    	32
-#define GPIO_OUTPUT_IO_1    	33
-
-#define GPIO_OUTPUT_PIN_SEL  ((1ULL<<GPIO_OUTPUT_IO_0) | (1ULL<<GPIO_OUTPUT_IO_1))
-
-volatile uint8_t state = 0;
-uint8_t plan[96];
+#define TAG_MAIN 	"MAIN"
+#define TAG_WORK 	"WORK"
 
 void getHourMinute( int * h, int * m, int * s )
 {
@@ -48,28 +23,6 @@ void getHourMinute( int * h, int * m, int * s )
 	*s = ti->tm_sec;
 }
 
-void initialize_io()
-{
-	gpio_config_t io_conf;
-    io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
-    io_conf.mode = GPIO_MODE_OUTPUT;
-    io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL;
-    io_conf.pull_down_en = 0;
-    io_conf.pull_up_en = 0;
-
-    gpio_config(&io_conf);
-}
-
-void io_relay( int state )
-{
-	gpio_set_level(GPIO_OUTPUT_IO_0, state);
-}
-
-void led_connection( int on )
-{
-	gpio_set_level(GPIO_OUTPUT_IO_1, on);
-}
-
 void working_task(void *p)
 {
 	while ( 1 )
@@ -78,21 +31,25 @@ void working_task(void *p)
 		getHourMinute( &h, &m, &s );
 
 		int index = (h * 4) + m/15;
-		uint8_t action = plan[index];
 
-		ESP_LOGI(TAG_WORK, "Current time %02d:%02d:%02d", h, m, s);
-		ESP_LOGI(TAG_WORK, "index = %d -> %s", index, action == 1 ? "on" : "off" );
-		
-		if ( action != state )
+		uint8_t action = get_plan( index );
+
+		if ( h != 0 || m != 0 )
 		{
-			state = action;
-			ESP_LOGI(TAG_WORK, "State changed to %s...", state ? "on" : "off" );
+			ESP_LOGI(TAG_WORK, "Current time %02d:%02d:%02d", h, m, s);
 
-			ESP_LOGI(TAG_WORK, "setting GPIO0 %s...", state ? "on" : "off" );
-			io_relay( state );
+			if ( action != get_state() )
+			{
+				set_state( action );
+				ESP_LOGI(TAG_WORK, "State changed to %s...", action ? "ON" : "OFF" );
+
+				io_relay( action );
+			}
+			else
+				ESP_LOGI(TAG_WORK, "State continue %s...", action ? "ON" : "OFF" );
 		}
 		else
-			ESP_LOGI(TAG_WORK, "State mantains %s...", state ? "on" : "off" );
+			ESP_LOGI(TAG_WORK, "At this time a new plan is being retrieved. Action %s is delayed...", action ? "ON" : "OFF" );
 		
 		ESP_LOGI(TAG_WORK, "Waiting for %d seconds...", 60-s );
 		vTaskDelay((60-s)*1000 / portTICK_PERIOD_MS);
@@ -101,11 +58,30 @@ void working_task(void *p)
 
 void reboot( char * message )
 {
-	ESP_LOGE(TAG_MAIN, "%s", message );
-	vTaskDelay(10000 / portTICK_PERIOD_MS);
+	ESP_LOGI(TAG_MAIN, "%s", message );
+	vTaskDelay(3000 / portTICK_PERIOD_MS);
 	esp_restart();
 }
 	
+void load_plan( CONFIGURATION * config )
+{
+	set_plan_loaded( 0 );
+
+	uint8_t new_plan[96];
+	if ( !getWorkingPlan( config, new_plan ) )
+	{
+		ESP_LOGE(TAG_MAIN, "Could not retrieve new working plan. Current plan continue." );
+	}
+	else
+	{
+		set_plan( new_plan );
+		set_plan_loaded( 1 );
+	}
+
+	if ( !synchronizeTime( config ) )
+		ESP_LOGE(TAG_MAIN, "Time synchronization failed. Current time continue." );
+}
+
 void app_main()
 {
     esp_err_t err = nvs_flash_init();
@@ -123,6 +99,7 @@ void app_main()
 	CONFIGURATION * config = get_configuration();
 
 	initialize_io();
+	io_relay( get_state() );
 
 	int connection = 0;
 	led_connection( connection );
@@ -130,19 +107,19 @@ void app_main()
 	xTaskCreate(&bluetooth_config_task, "bluetooth_config_task", 4096, NULL, 5, NULL);
 	xTaskCreate(&wifi_connection_task, "wifi_connection_task", 4096, config, 5, NULL);
 	
-	while ( !wifi_connected() )
+	while ( !is_wifi_connected() )
 	{
 		ESP_LOGI(TAG_MAIN, "Waiting for wifi connection...");
-		vTaskDelay(1000 / portTICK_PERIOD_MS);
+		vTaskDelay(3000 / portTICK_PERIOD_MS);
 		
 		connection = 1-connection;
 		led_connection( connection );
 
-		if ( configuration_changed() )
+		if ( is_configuration_changed() )
 			reboot("Configuration changed. Restarting...");
 	}
 
-	int retries = 3;
+	int retries = 5;
 	while ( 1 )
 	{
 		if ( synchronizeTime( config ) )
@@ -152,51 +129,48 @@ void app_main()
 			reboot( "Time synchronization failed. Restarting..." );
 			
 		ESP_LOGI(TAG_MAIN, "Waiting to retry...");
-		vTaskDelay(10000 / portTICK_PERIOD_MS);
+		vTaskDelay(30000 / portTICK_PERIOD_MS);
+
+		if ( is_configuration_changed() )
+			reboot("Configuration changed. Restarting...");
 	}
 
-	retries = 3;
+	retries = 5;
 	while ( 1 )
 	{
-		if ( getWorkingPlan( config, plan ) )
+		uint8_t new_plan[96];
+		if ( getWorkingPlan( config, new_plan ) )
+		{
+			set_plan( new_plan );
+			set_plan_loaded( 1 );
+
 			break;
-			
+		}
+
 		if ( !(retries--) )
 			reboot("Working plan not retrieved. Restarting...");
 			
 		ESP_LOGI(TAG_MAIN, "Waiting to retry...");
-		vTaskDelay(10000 / portTICK_PERIOD_MS);
+		vTaskDelay(30000 / portTICK_PERIOD_MS);
 	}
 		
-	xTaskCreate(&working_task, "working_task", 4096, plan, 5, NULL);
+	xTaskCreate(&working_task, "working_task", 4096, NULL, 5, NULL);
 
 	while ( 1 )
 	{
 		int h, m, s;
 		getHourMinute( &h, &m, &s );
 
-		if ( h == 0 && m == 0 )
-		{
-			uint8_t new_plan[96];
-
-			if ( !getWorkingPlan( config, new_plan ) )
-			{
-				ESP_LOGE(TAG_MAIN, "Could not retrieve new working plan. Current plan remains." );
-			}
-			else
-				memcpy( plan, new_plan, sizeof(plan) );
-				
-			if ( !synchronizeTime( config ) )
-				ESP_LOGE(TAG_MAIN, "Time synchronization failed. Current time remains." );
-		}
-		
-		ESP_LOGI(TAG_MAIN, "Sending alive signal...");
-		led_connection( sendAliveSignal( config, state ) );
+		if ( (h == 0 && m == 0) || !is_plan_loaded() )
+			load_plan(config);
 
 		ESP_LOGI(TAG_MAIN, "Waiting for %d seconds...", 60-s );
 		vTaskDelay((60-s)*1000 / portTICK_PERIOD_MS);
 
-		if ( configuration_changed() )
+		if ( is_configuration_changed() )
 			reboot("Configuration changed. Restarting...");
+
+		ESP_LOGI(TAG_MAIN, "Sending alive signal...");
+		led_connection( sendAliveSignal( config, get_state() ) );
 	}
 }

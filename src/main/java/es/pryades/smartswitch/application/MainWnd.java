@@ -138,8 +138,9 @@ public class MainWnd extends VerticalLayout implements MinimizerContainer
 		if ( getContext().hasRight( AUTH_CONFIGURACION ) )
 		{
 			btn = new Button( getContext().getString( "words.configuration" ) );
-			btn.setWidth( Constants.DEFAULT_BUTTON_WIDTH );
-			//btn.addStyleName( "menu" );
+			//btn.setWidth( Constants.DEFAULT_BUTTON_WIDTH );
+			btn.setStyleName( "borderless icon-on-top" );
+			btn.setIcon( new ThemeResource( "images/config.png" ) );
 			btn.addClickListener( new Button.ClickListener()
 			{
 				private static final long serialVersionUID = 3827413316030851767L;
@@ -153,8 +154,9 @@ public class MainWnd extends VerticalLayout implements MinimizerContainer
 		}
 
 		btn = new Button( getContext().getString( "words.my.account" ) );
-		btn.setWidth( Constants.DEFAULT_BUTTON_WIDTH );
-		//btn.addStyleName( "menu" );
+		//btn.setWidth( Constants.DEFAULT_BUTTON_WIDTH );
+		btn.setStyleName( "borderless icon-on-top" );
+		btn.setIcon( new ThemeResource( "images/user.png" ) );
 		btn.addClickListener( new Button.ClickListener()
 		{
 			private static final long serialVersionUID = 3827413316030851767L;
@@ -167,8 +169,9 @@ public class MainWnd extends VerticalLayout implements MinimizerContainer
 		buttons.addComponent( btn );
 		
 		btn = new Button( getContext().getString( "words.logout" ) );
-		btn.setWidth( Constants.DEFAULT_BUTTON_WIDTH );
-		//btn.addStyleName( "menu" );
+		//btn.setWidth( Constants.DEFAULT_BUTTON_WIDTH );
+		btn.setStyleName( "borderless icon-on-top" );
+		btn.setIcon( new ThemeResource( "images/logout.png" ) );
 		btn.addClickListener( new Button.ClickListener()
 		{
 			private static final long serialVersionUID = 3827413316030851767L;

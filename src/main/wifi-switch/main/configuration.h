@@ -21,6 +21,4 @@ void set_configuration( char * setupCommand );
 
 void configuration_task(void *pvParameters);
 
-int configuration_changed();
-
 #endif

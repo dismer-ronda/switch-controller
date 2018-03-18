@@ -75,6 +75,8 @@ public abstract class PagedContent extends VerticalLayout implements Property.Va
 	public boolean hasModify() 		{ return true; }
 	public boolean hasDelete() 		{ return true; }
 	public boolean hasDeleteAll()	{ return false; }
+	public boolean hasExportExcel()	{ return false; }
+	public boolean hasExportCsv()	{ return false; }
 
 	public boolean isSortEnabled()	{ return true; }
 
@@ -564,50 +566,56 @@ public abstract class PagedContent extends VerticalLayout implements Property.Va
 	{ 
 		List<Component> ops = new ArrayList<Component>();
 		
-		Button btnCsv = new Button();
-		btnCsv.setCaption( getContext().getString( "words.download.csv" ) );
-		btnCsv.addClickListener( new Button.ClickListener()
+		if ( hasExportCsv() )
 		{
-			private static final long serialVersionUID = 7016168454309584677L;
-
-			public void buttonClick( ClickEvent event )
+			Button btnCsv = new Button();
+			btnCsv.setCaption( getContext().getString( "words.download.csv" ) );
+			btnCsv.addClickListener( new Button.ClickListener()
 			{
-				if ( table.getNumberOfRows() > getContext().getIntegerParameter( Parameter.PAR_MAX_ROWS_EXPORTED ) )
+				private static final long serialVersionUID = 7016168454309584677L;
+	
+				public void buttonClick( ClickEvent event )
 				{
-					Utils.showNotification( getContext(), getContext().getString( "PagedContent.too.many.rows" ), Notification.Type.ERROR_MESSAGE );
-					
-					AsyncExportThread thread = new AsyncExportThread( getContext(), "csv" );
-					thread.start();
+					if ( table.getNumberOfRows() > getContext().getIntegerParameter( Parameter.PAR_MAX_ROWS_EXPORTED ) )
+					{
+						Utils.showNotification( getContext(), getContext().getString( "PagedContent.too.many.rows" ), Notification.Type.ERROR_MESSAGE );
+						
+						AsyncExportThread thread = new AsyncExportThread( getContext(), "csv" );
+						thread.start();
+					}
 				}
-			}
-		});
-		ops.add( btnCsv );
+			});
+			ops.add( btnCsv );
+			
+	        FileDownloader fileDownloaderCsv = new FileDownloader( createResource( "csv" ) );
+	        fileDownloaderCsv.extend( btnCsv );
+		}
 		
-        FileDownloader fileDownloaderCsv = new FileDownloader( createResource( "csv" ) );
-        fileDownloaderCsv.extend( btnCsv );
-		
-		Button btnExcel = new Button();
-		btnExcel.setCaption( getContext().getString( "words.download.xls" ) );
-		btnExcel.addClickListener( new Button.ClickListener()
+		if ( hasExportExcel() )
 		{
-			private static final long serialVersionUID = 8080872723898039919L;
-
-			public void buttonClick( ClickEvent event )
+			Button btnExcel = new Button();
+			btnExcel.setCaption( getContext().getString( "words.download.xls" ) );
+			btnExcel.addClickListener( new Button.ClickListener()
 			{
-				if ( table.getNumberOfRows() > getContext().getIntegerParameter( Parameter.PAR_MAX_ROWS_EXPORTED ) )
+				private static final long serialVersionUID = 8080872723898039919L;
+	
+				public void buttonClick( ClickEvent event )
 				{
-					Utils.showNotification( getContext(), getContext().getString( "PagedContent.too.many.rows" ), Notification.Type.ERROR_MESSAGE );
-					
-					AsyncExportThread thread = new AsyncExportThread( getContext(), "xls" );
-					thread.start();
+					if ( table.getNumberOfRows() > getContext().getIntegerParameter( Parameter.PAR_MAX_ROWS_EXPORTED ) )
+					{
+						Utils.showNotification( getContext(), getContext().getString( "PagedContent.too.many.rows" ), Notification.Type.ERROR_MESSAGE );
+						
+						AsyncExportThread thread = new AsyncExportThread( getContext(), "xls" );
+						thread.start();
+					}
 				}
-			}
-		});
-		
-		ops.add( btnExcel );
-		
-        FileDownloader fileDownloaderXls = new FileDownloader( createResource( "xls" ) );
-        fileDownloaderXls.extend( btnExcel );
+			});
+			
+			ops.add( btnExcel );
+			
+	        FileDownloader fileDownloaderXls = new FileDownloader( createResource( "xls" ) );
+	        fileDownloaderXls.extend( btnExcel );
+		}
         
 		return ops;
 	}

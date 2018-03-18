@@ -1,42 +1,30 @@
-#include <string.h>
-
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-
-#include "nvs_flash.h"
-
-#include "esp_vfs.h"
-#include "esp_vfs_fat.h"
-#include "esp_system.h"
-
+#include "critical.h"
 #include "configuration.h"
 
 #define STORAGE_NAMESPACE "storage"
 
-static const char *TAG = "CONF";
+#define TAG_CONFIGURATION "CONFIGURATION"
 
 CONFIGURATION configuration;
 
-volatile int configurationChanged = 0;
-
 nvs_handle open_storage()
 {
-    ESP_LOGI(TAG, "Opening NVS Storage");
+    ESP_LOGI(TAG_CONFIGURATION, "Opening NVS Storage");
 
     nvs_handle my_handle;
     if (nvs_open(STORAGE_NAMESPACE, NVS_READWRITE, &my_handle) != ESP_OK) 
     {
-		ESP_LOGI(TAG, "Error opening storage");
+		ESP_LOGE(TAG_CONFIGURATION, "Error opening storage");
     	return -1;
 	}
     
-    ESP_LOGI(TAG, "Storage open");
+    ESP_LOGI(TAG_CONFIGURATION, "Storage open");
     return my_handle;
 }
 
 void write_configuration()
 {
-    ESP_LOGI(TAG, "Saving configuration file");
+    ESP_LOGI(TAG_CONFIGURATION, "Saving configuration file");
     
     nvs_handle my_handle = open_storage();
     
@@ -47,28 +35,28 @@ void write_configuration()
 		esp_err_t err = nvs_set_blob(my_handle, "configuration", &configuration, required_size);
 	
 		if (err == ESP_OK) 
-			ESP_LOGI(TAG, "Configuration written");
+			ESP_LOGI(TAG_CONFIGURATION, "Configuration written");
 
 		nvs_close(my_handle);
 		
-		configurationChanged = 1;
+		set_configuration_changed( 1 );
 	}
 }
 
 void log_configuration()
 {
-	ESP_LOGI(TAG, "hubName = %s", configuration.intName );
+	ESP_LOGI(TAG_CONFIGURATION, "intName = %s", configuration.intName );
 	
-	ESP_LOGI(TAG, "wifiSSID = %s", configuration.wifiSSID );
-	ESP_LOGI(TAG, "wifiPass = %s", configuration.wifiPass );
+	ESP_LOGI(TAG_CONFIGURATION, "wifiSSID = %s", configuration.wifiSSID );
+	ESP_LOGI(TAG_CONFIGURATION, "wifiPass = %s", configuration.wifiPass );
 
-	ESP_LOGI(TAG, "serverAddress = %s", configuration.serverAddress );
-	ESP_LOGI(TAG, "serverPort = %s", configuration.serverPort );
+	ESP_LOGI(TAG_CONFIGURATION, "serverAddress = %s", configuration.serverAddress );
+	ESP_LOGI(TAG_CONFIGURATION, "serverPort = %s", configuration.serverPort );
 }
 
 void read_configuration()
 {
-    ESP_LOGI(TAG, "Reading configuration file");
+    ESP_LOGI(TAG_CONFIGURATION, "Reading configuration file");
     
     nvs_handle my_handle = open_storage();
     
@@ -82,7 +70,7 @@ void read_configuration()
 
 		nvs_close(my_handle);
 
-		ESP_LOGI(TAG, "Done");
+		ESP_LOGI(TAG_CONFIGURATION, "Done");
 	}
 }
 
@@ -121,8 +109,3 @@ void set_configuration( char * setupCommand )
 	
 	write_configuration();
 }	
-
-int configuration_changed()
-{
-	return configurationChanged;
-}

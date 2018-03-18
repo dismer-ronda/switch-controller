@@ -1,20 +1,7 @@
-#include <string.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/event_groups.h"
-#include "esp_system.h"
-#include "esp_wifi.h"
-#include "esp_event_loop.h"
-#include "esp_log.h"
-#include "nvs_flash.h"
-
-#include "lwip/err.h"
-#include "lwip/sockets.h"
-#include "lwip/sys.h"
-#include "lwip/netdb.h"
-#include "lwip/dns.h"
+#include "wifi.h"
 
 #include "configuration.h"
+#include "critical.h"
 
 static EventGroupHandle_t wifi_event_group;
 
@@ -66,12 +53,6 @@ static void initialise_wifi( CONFIGURATION * config )
     ESP_ERROR_CHECK( esp_wifi_start() );
 }
 
-static volatile int wifiConnected = 0;
-int wifi_connected()
-{
-	return wifiConnected;
-}
-
 void wifi_connection_task( void * p )
 {
     initialise_wifi( (CONFIGURATION *)p );
@@ -79,7 +60,7 @@ void wifi_connection_task( void * p )
 	xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, false, true, portMAX_DELAY);
 	ESP_LOGI(TAG_WIFI, "Connected to AP");
 
-	wifiConnected = 1;
+	set_wifi_connected( 1 );
 	
 	while ( 1 )
 	{
