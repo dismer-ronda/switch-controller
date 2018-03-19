@@ -77,7 +77,7 @@ public class InterruptorStatusResource extends ServerResource
 					long delay = Utils.getDurationInSeconds( lastAlive, CalendarUtils.getServerDateAsLong() );
 					
 					if ( delay < 240 )
-						ret = "OK";
+						ret = "OK " + delay + " seconds ago";
 					else if ( delay < 480 )
 						ret = "WARNING " + delay/60 + " minutes disconnected";
 					else
