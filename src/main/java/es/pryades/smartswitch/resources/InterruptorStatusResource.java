@@ -85,7 +85,7 @@ public class InterruptorStatusResource extends ServerResource
 				}
 			}
 			else
-				ret = "CRITICAL Interruptor not found";
+				ret = "CRITICAL Interruptor " + name + " not found";
 		}
 		catch( Throwable e )
 		{
