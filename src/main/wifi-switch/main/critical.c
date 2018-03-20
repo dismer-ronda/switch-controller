@@ -8,6 +8,7 @@ static uint8_t plan[96];
 static volatile uint8_t plan_loaded = 0;
 static volatile uint8_t wifi_connected = 0;
 static volatile uint8_t configuration_changed = 0;
+static volatile uint8_t forced_action = 0;
 
 static portMUX_TYPE myMutex=portMUX_INITIALIZER_UNLOCKED;
 
@@ -129,4 +130,30 @@ void set_configuration_changed( uint8_t value )
 	taskEXIT_CRITICAL(&myMutex);
 
 	//ESP_LOGI(TAG_CRITICAL, "exit set_configuration_changed");
+}
+
+uint8_t get_forced_action()
+{
+	//ESP_LOGI(TAG_CRITICAL, "enter get_state");
+
+	taskENTER_CRITICAL(&myMutex);
+	uint8_t ret = forced_action;
+	taskEXIT_CRITICAL(&myMutex);
+
+	//ESP_LOGI(TAG_CRITICAL, "exit get_state");
+
+	return ret;
+}
+
+uint8_t set_forced_action( uint8_t value )
+{
+	//ESP_LOGI(TAG_CRITICAL, "enter set_state");
+
+	taskENTER_CRITICAL(&myMutex);
+	uint8_t ret = forced_action;
+	forced_action = value;
+	taskEXIT_CRITICAL(&myMutex);
+
+	//ESP_LOGI(TAG_CRITICAL, "exit set_state");
+	return ret;
 }

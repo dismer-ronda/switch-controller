@@ -61,6 +61,8 @@ public class InterruptorControlerVto extends GenericControlerVto
 					result.setState( getContext().getString( "words.unknown" ) );
 				else
 					result.setState( getContext().getString( state.equals( 0 ) ? "words.off" : "words.on" ) );
+				
+				result.setForced_action( getContext().getString( "modalNewInterruptor.forced." + ((Interruptor) dtoObj).getForced_action() ) );
 			}
 			else
 			{

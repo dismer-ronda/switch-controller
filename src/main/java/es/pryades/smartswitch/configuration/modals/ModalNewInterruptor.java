@@ -38,6 +38,7 @@ public class ModalNewInterruptor extends ModalWindowsCRUD
 	private TextField editAddress;
 	private TextField editPower;
 	private ComboBox comboEnabled;
+	private ComboBox comboForced;
 
 	/**
 	 * 
@@ -76,7 +77,8 @@ public class ModalNewInterruptor extends ModalWindowsCRUD
 			
 			newInterruptor.setPlan_labor( getNewPlan() );
 			newInterruptor.setPlan_free( getNewPlan() );
-			newInterruptor.setEnabled(1);
+			newInterruptor.setEnabled( 1 );
+			newInterruptor.setForced_action( 0 );
 		}
 
 		bi = new BeanItem<BaseDto>( newInterruptor );
@@ -119,6 +121,15 @@ public class ModalNewInterruptor extends ModalWindowsCRUD
 		comboEnabled.setReadOnly( false );
 		fillComboEnabled();
 
+		comboForced = new ComboBox();
+		comboForced.setWidth( "100%" );
+		comboForced.setNullSelectionAllowed( false );
+		comboForced.setTextInputAllowed( false );
+		comboForced.setImmediate( true );
+		comboForced.setPropertyDataSource( bi.getItemProperty( "forced_action" ) );
+		comboForced.setReadOnly( false );
+		fillComboForced();
+
 		int tabIndex = 1;
 		
 		editOrder.setTabIndex( tabIndex++ );
@@ -138,6 +149,9 @@ public class ModalNewInterruptor extends ModalWindowsCRUD
 		
 		comboEnabled.setTabIndex( tabIndex++ );
 		HorizontalLayout rowEnabled = AppUtils.rowComponent( getContext(), comboEnabled, "modalNewInterruptor.enabled", null );
+
+		comboForced.setTabIndex( tabIndex++ );
+		HorizontalLayout rowForced = AppUtils.rowComponent( getContext(), comboForced, "modalNewInterruptor.forced", null );
 
 		HorizontalLayout row1 = new HorizontalLayout();
 		row1.setWidth( "100%" );
@@ -160,7 +174,7 @@ public class ModalNewInterruptor extends ModalWindowsCRUD
 		row4.setWidth( "100%" );
 		row4.setSpacing( true );
 		row4.addComponent( rowEnabled );
-		row4.addComponent( new HorizontalLayout() );
+		row4.addComponent( rowForced );
 
 		componentsContainer.addComponent( row1 );
 		componentsContainer.addComponent( row2 );
@@ -189,7 +203,7 @@ public class ModalNewInterruptor extends ModalWindowsCRUD
 		try
 		{
 			newInterruptor.setId( null );
-
+			
 			IOCManager._InterruptorsManager.setRow( getContext(), null, newInterruptor );
 
 			FacilityInterruptor giInterruptor = new FacilityInterruptor();
@@ -251,5 +265,19 @@ public class ModalNewInterruptor extends ModalWindowsCRUD
 		comboEnabled.setItemCaption( 1, getContext().getString( "words.yes" ) );
 		
 		comboEnabled.select( newInterruptor.getEnabled() != 0 ? 1 : 0  );
+	}
+
+	private void fillComboForced()
+	{
+		comboForced.addItem( 0 );
+		comboForced.setItemCaption( 0, getContext().getString( "modalNewInterruptor.forced.0" ) );
+
+		comboForced.addItem( 1 );
+		comboForced.setItemCaption( 1, getContext().getString( "modalNewInterruptor.forced.1" ) );
+
+		comboForced.addItem( 2 );
+		comboForced.setItemCaption( 2, getContext().getString( "modalNewInterruptor.forced.2" ) );
+
+		comboForced.select( newInterruptor.getForced_action() );
 	}
 }

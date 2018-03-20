@@ -155,37 +155,23 @@ public class InterruptorsProcessor extends Thread
     		this.transport = transport;
 	    }
 
-	    String readInterruptorId() throws Throwable
+	    String readInterruptorId( int buffer[], int pos ) throws Throwable
 	    {
 	    	String ret = "";
-	    	boolean complete=false;
-	    	int count = 0;
-	    	while ( !complete )
-	    	{
-	    		int b = transport.read( 3 * Utils.ONE_SECOND );
-	    		
-	    		complete = b == 0;
-	    		if ( !complete )
-	    			ret += (char)b;
-	    		
-	    		count++;
-	    	}
+	    	while ( buffer[pos] != 0 && pos < buffer.length )
+	    		ret += (char)buffer[pos++];
 	    	
-	    	LOG.info( "interruptor " + ret + " request incoming. " + count + " bytes read" );
+	    	LOG.info( "interruptor " + ret + " request incoming. " );
 	    	
 	    	return ret;
 	    }
 
-	    private String readInterruptorAddress() throws Throwable
+	    private String readInterruptorAddress( int buffer[], int pos ) throws Throwable
 	    {
-	    	int[] buffer = new int[4];
-	    	for ( int i = 0; i < 4; i++)
-	    		buffer[i] = transport.read( 3 * Utils.ONE_SECOND );
-	    	
-	    	return Integer.toString( buffer[0] ) + "." + Integer.toString( buffer[1] ) + "." + Integer.toString( buffer[2] ) + "." + Integer.toString( buffer[3] ); 
+	    	return Integer.toString( buffer[pos] ) + "." + Integer.toString( buffer[pos+1] ) + "." + Integer.toString( buffer[pos+2] ) + "." + Integer.toString( buffer[pos+3] ); 
 	    }
 
-	    private void sendCurrentTime() throws Throwable
+	    private void sendCurrentTime( int buffer[] ) throws Throwable
 	    {
 	    	long date = System.currentTimeMillis();
 	    	int offset = TimeZone.getDefault().getOffset(date);
@@ -193,37 +179,23 @@ public class InterruptorsProcessor extends Thread
 			long seconds = (date+offset) / 1000;
 			byte[] time = Utils.longToBytes( seconds );
 			
-			transport.write( time[7] );
-			transport.write( time[6] );
-			transport.write( time[5] );
-			transport.write( time[4] );
-			transport.write( 1 );
+			int length = 5;
+			int[] temp = new int[length + 2];
+
+			temp[0] = length;
+			temp[1] = time[7];
+			temp[2] = time[6];
+			temp[3] = time[5];
+			temp[4] = time[4];
+
+			int crc = Utils.calculate_crc( temp, length );
+			
+			temp[5] = Utils.lobyte( crc );
+			temp[6] = Utils.hibyte( crc );
+			
+			for ( int i = 0; i < temp.length; i++ )
+				transport.write( temp[i] );
 			transport.flushOutput();
-	    }
-	    
-	    private void updateAddress() throws Throwable
-	    {
-			AppContext ctx = new AppContext( "es" );
-			IOCManager._ParametersManager.loadParameters( ctx );
-			
-			String name = readInterruptorId();
-			
-			Interruptor query = new Interruptor();
-			query.setName( name );
-			Interruptor interruptor = (Interruptor)IOCManager._InterruptorsManager.getRow( ctx, query );
-			
-			if ( interruptor != null )
-			{
-				LOG.info( "interruptor found " + interruptor );
-				
-				Interruptor clone = (Interruptor)Utils.clone( interruptor );
-				clone.setAddress( readInterruptorAddress() );
-				IOCManager._InterruptorsManager.setRow( ctx, interruptor, clone );
-				
-				transport.write( 1 );
-			}
-			else
-				LOG.info( "interruptor " +  name + "not found" );
 	    }
 	    
 	    boolean isDayOfWeek( Calendar calendar, String value )
@@ -332,12 +304,12 @@ public class InterruptorsProcessor extends Thread
 			return null;
 	    }
 	    
-	    private void sendPlan() throws Throwable
+	    private void sendPlan( int[] buffer ) throws Throwable
 	    {
 			AppContext ctx = new AppContext( "es" );
 			IOCManager._ParametersManager.loadParameters( ctx );
 			
-			String name = readInterruptorId();
+			String name = readInterruptorId( buffer, 2 );
 			
 			Interruptor query = new Interruptor();
 			query.setName( name );
@@ -358,20 +330,37 @@ public class InterruptorsProcessor extends Thread
 					plan = interruptor.getPlan_labor();
 				}
 				
-				transport.write( plan );
-				transport.write( 1 );
+				int length = 2 + plan.length;
+				int[] temp = new int[length+2];
+
+				temp[0] = length;
+				temp[1] = interruptor.getForced_action();
+				for ( int i = 0; i < plan.length; i++ )
+					temp[i+2] = plan[i];
+
+				int crc = Utils.calculate_crc( temp, length );
+				
+				LOG.info( "plan CRC = " + String.format( "%X", crc ) );
+				
+				temp[length] = Utils.lobyte( crc );
+				temp[length+1] = Utils.hibyte( crc );
+				
+				for ( int i = 0; i < temp.length; i++ )
+					transport.write( temp[i] );
 				transport.flushOutput();
 			}
 			else
 				LOG.info( "interruptor " +  name + "not found" );
 	    }
 
-	    private void aliveSignal() throws Throwable
+	    private void aliveSignal( int[] buffer ) throws Throwable
 	    {
 			AppContext ctx = new AppContext( "es" );
 			IOCManager._ParametersManager.loadParameters( ctx );
 			
-			String name = readInterruptorId();
+			String name = readInterruptorId( buffer, 2 );
+			int state = (byte)buffer[name.length() + 3];
+			String address = readInterruptorAddress( buffer, name.length() + 4 );
 			
 			Interruptor query = new Interruptor();
 			query.setName( name );
@@ -381,43 +370,86 @@ public class InterruptorsProcessor extends Thread
 			{
 				LOG.info( "interruptor found " + interruptor );
 				
+				int length = 1 + 2;
+				int[] temp = new int[length+2];
+
+				temp[0] = length;
+				temp[1] = interruptor.getReload_plan();
+				temp[2] = interruptor.getForced_action();
+
+				int crc = Utils.calculate_crc( temp, length );
+				
+				temp[3] = Utils.lobyte( crc );
+				temp[4] = Utils.hibyte( crc );
+				
+				for ( int i = 0; i < temp.length; i++ )
+					transport.write( temp[i] );
+				transport.flushOutput();
+
 				Interruptor clone = (Interruptor)Utils.clone( interruptor );
-				clone.setState( Integer.valueOf( transport.read( 3 * Utils.ONE_SECOND ) ) );
-				clone.setAddress( readInterruptorAddress() );
+				clone.setState( state );
+				clone.setAddress( address );
 				clone.setLast_signal( CalendarUtils.getServerDateAsLong() );
+				clone.setReload_plan( 0 );
 
 				IOCManager._InterruptorsManager.setRow( ctx, interruptor, clone );
-				
-				transport.write( 1 );
 			}
 			else
 				LOG.info( "interruptor " +  name + "not found" );
 	    }
 
+	    private int[] readCommandBuffer()
+	    {
+	    	try
+	    	{
+		    	byte size = (byte)transport.read( 3 * Utils.ONE_SECOND );
+	    	
+		    	int[] buffer = new int[size];
+		    	
+		    	buffer[0] = size;
+		    	for ( int i = 1; i < size; i++ )
+		    		buffer[i] = transport.read( 3 * Utils.ONE_SECOND );
+		    	
+		    	byte crc_lo = (byte)transport.read( 3 * Utils.ONE_SECOND );
+		    	byte crc_hi = (byte)transport.read( 3 * Utils.ONE_SECOND );
+		    	
+		    	int crc = Utils.calculate_crc( buffer, size );
+		    	
+		    	if ( Utils.lobyte( (short)crc ) == crc_lo && Utils.hibyte( (short)crc ) == crc_hi )
+		    		return buffer;
+		    	
+		    	LOG.info( "FAILURE ---> CRC received=" + Utils.convertToHex( crc_hi ) + Utils.convertToHex( crc_lo ) + " CRC calculated=" + String.format( "%X", crc ) );
+	    	}
+	    	catch ( Throwable e )
+	    	{
+				Utils.logException( e, LOG );
+	    	}
+	    	
+	    	return null;
+	    }
+	    
 	    public void run () 
 	    {
 			Status.incThreads();
 
 	    	try 
 	    	{
-		    	int command  = transport.read( 3 * Utils.ONE_SECOND );
+		    	int[] buffer = readCommandBuffer();
+
+		    	int command  = buffer[1];
 		    	
 		    	switch ( command )
 		    	{
 		    		case 1:
-		    			sendPlan();
+		    			sendPlan( buffer );
 		    		break;
 		    		
 		    		case 2:
-		    			sendCurrentTime();
+		    			sendCurrentTime( buffer );
 		    		break;
 
 		    		case 3:
-		    			updateAddress();
-		    		break;
-
-		    		case 4:
-		    			aliveSignal();
+		    			aliveSignal( buffer );
 		    		break;
 		    	}
 	    	}

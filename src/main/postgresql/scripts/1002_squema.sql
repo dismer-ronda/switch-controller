@@ -117,6 +117,10 @@ create table interruptors (
     enabled integer not null default 1,
     state integer,
     last_signal bigint,
+    reload_plan integer not null default 0,
+    
+    forced_order integer not null default 0,
+    forced_action integer not null default 0,
 
     constraint pk_interruptors primary key(id),
     constraint uk_interruptors_name unique (name)    

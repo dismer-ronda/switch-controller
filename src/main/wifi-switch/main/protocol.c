@@ -97,6 +97,7 @@ int read_buffer( int s, uint8_t * buffer, int size )
 	return 1;
 }
 
+
 int read_ack( int s )
 {
 	uint8_t ack;
@@ -108,25 +109,40 @@ int read_ack( int s )
 	return ack;
 }
 
-int getWorkingPlan( CONFIGURATION * config, uint8_t * plan )
+int read_response( int s, uint8_t *buffer )
 {
-    struct addrinfo *res;
-    struct in_addr *addr;
-    int s;
+	uint8_t size;
+	int count = read(s, &size, 1 );
+	if ( count < 0 )
+		return 0;
 
-	int err = getaddrinfo(config->serverAddress, config->serverPort, &hints, &res);
+	buffer[0] = size;
 
-	if(err != 0 || res == NULL) {
+	count = read( s, buffer + 1, size + 1 );
+	if ( count < 0 )
+		return 0;
+
+	uint16_t calculated_crc = calculate_crc( buffer, size );
+	uint16_t received_crc = ((((int)buffer[size+1]) << 8) | buffer[size]);
+
+	return calculated_crc == received_crc;
+}
+
+int connect_server( int * s, char * address, char * port )
+{
+	struct addrinfo *res;
+	int err = getaddrinfo(address, port, &hints, &res);
+
+	if ( err != 0 || res == NULL )
+	{
 		ESP_LOGE(TAG_HTTP, "DNS lookup failed err=%d res=%p", err, res);
 		vTaskDelay(1000 / portTICK_PERIOD_MS);
 		return 0;
 	}
 
-	addr = &((struct sockaddr_in *)res->ai_addr)->sin_addr;
-	//ESP_LOGI(TAG_HTTP, "DNS lookup succeeded. IP=%s", inet_ntoa(*addr));
-
-	s = socket(res->ai_family, res->ai_socktype, 0);
-	if(s < 0) {
+	*s = socket(res->ai_family, res->ai_socktype, 0);
+	if ( *s < 0 )
+	{
 		ESP_LOGE(TAG_HTTP, "... Failed to allocate socket.");
 		freeaddrinfo(res);
 		return 0;
@@ -136,12 +152,12 @@ int getWorkingPlan( CONFIGURATION * config, uint8_t * plan )
 	struct timeval tv;
 	tv.tv_sec = 3;
 	tv.tv_usec = 0;
-	setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+	setsockopt(*s, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
 
-	if(connect(s, res->ai_addr, res->ai_addrlen) != 0) 
+	if ( connect(*s, res->ai_addr, res->ai_addrlen) != 0 )
 	{
 		ESP_LOGE(TAG_HTTP, "... socket connect failed errno=%d", errno);
-		close(s);
+		close(*s);
 		freeaddrinfo(res);
 		return 0;
 	}
@@ -149,95 +165,98 @@ int getWorkingPlan( CONFIGURATION * config, uint8_t * plan )
 	//ESP_LOGI(TAG_HTTP, "... connected");
 	freeaddrinfo(res);
 
-	uint8_t command[1] = { 1 };
-	if (write(s, command, sizeof(command) ) < 0) {
-		ESP_LOGE(TAG_HTTP, "... command send failed");
+	return 1;
+}
+
+int get_working_plan( CONFIGURATION * config, uint8_t * plan, uint8_t * forced_action )
+{
+	uint8_t buffer[128];
+
+	int s;
+    if ( !connect_server( &s, config->serverAddress, config->serverPort ) )
+    	return 0;
+
+	uint8_t length = 2 + strlen(config->intName) + 1;
+	int pos = 0;
+
+	buffer[pos] = length;
+	pos++;
+
+	buffer[pos] = 1;
+	pos++;
+
+	memcpy( buffer + pos, config->intName, strlen(config->intName) + 1 );
+	pos += strlen(config->intName) + 1;
+
+	uint16_t crc = calculate_crc( buffer, length );
+	memcpy( buffer + pos, &crc, sizeof( crc ) );
+
+	if ( write( s, buffer, length + 2 ) < 0) {
+		ESP_LOGE(TAG_HTTP, "... buffer send failed");
 		close(s);
 		return 0;
 	}
 
-	if (write(s, config->intName, strlen(config->intName)+1 ) < 0) {
-		ESP_LOGE(TAG_HTTP, "... name send failed");
-		close(s);
-		return 0;
-	}
-	ESP_LOGI(TAG_HTTP, "... sent interruptor name %s", config->intName);
-
-	if ( read_buffer( s, plan, 96 ) )
+	if ( read_response( s, buffer ) )
 	{
-		if ( !read_ack(s) ) 
+		if ( buffer[0] != 98 )
 		{
-			ESP_LOGE(TAG_HTTP, "... ack not received");
+			ESP_LOGE(TAG_HTTP, "... FAILED");
 			close(s);
 			return 0;
 		}
 
-		ESP_LOGI(TAG_HTTP, "... working plan received");
+		*forced_action = buffer[1];
+		memcpy( plan, buffer + 2, 96 );
+
+		ESP_LOGI(TAG_HTTP, "... OK");
 		close(s);
 		return 1;
 	}
 
+	ESP_LOGE(TAG_HTTP, "... FAILED");
 	close(s);
 	return 0;
 }
 
-int synchronizeTime( CONFIGURATION * config )
+int synchronize_time( CONFIGURATION * config )
 {
-    struct addrinfo *res;
-    struct in_addr *addr;
+	uint8_t buffer[128];
+
     int s;
+    if ( !connect_server( &s, config->serverAddress, config->serverPort ) )
+    	return 0;
 
-	int err = getaddrinfo(config->serverAddress, config->serverPort, &hints, &res);
+	uint8_t length = 2;
+    int pos = 0;
 
-	if(err != 0 || res == NULL) {
-		ESP_LOGE(TAG_HTTP, "DNS lookup failed err=%d res=%p", err, res);
-		vTaskDelay(1000 / portTICK_PERIOD_MS);
+    buffer[pos] = length;
+    pos++;
+
+    buffer[pos] = 2;
+    pos++;
+
+    uint16_t crc = calculate_crc( buffer, length );
+	memcpy( buffer + pos, &crc, sizeof( crc ) );
+
+	if ( write( s, buffer, length + 2 ) < 0) {
+		ESP_LOGE(TAG_HTTP, "... buffer send failed");
+		close(s);
 		return 0;
 	}
 
-	addr = &((struct sockaddr_in *)res->ai_addr)->sin_addr;
-	//ESP_LOGI(TAG_HTTP, "DNS lookup succeeded. IP=%s", inet_ntoa(*addr));
-
-	s = socket(res->ai_family, res->ai_socktype, 0);
-	if(s < 0) {
-		ESP_LOGE(TAG_HTTP, "... Failed to allocate socket.");
-		freeaddrinfo(res);
-		return 0;
-	}
-	//ESP_LOGI(TAG_HTTP, "... allocated socket");
-	
-	struct timeval tv;
-	tv.tv_sec = 3;
-	tv.tv_usec = 0;
-	setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
-
-	if(connect(s, res->ai_addr, res->ai_addrlen) != 0) 
+	if ( read_response( s, buffer ) )
 	{
-		ESP_LOGE(TAG_HTTP, "... socket connect failed errno=%d", errno);
-		close(s);
-		freeaddrinfo(res);
-		return 0;
-	}
+		time_t epoch;
 
-	//ESP_LOGI(TAG_HTTP, "... connected");
-	freeaddrinfo(res);
-
-	uint8_t command[1] = { 2 };
-	if (write(s, command, sizeof(command) ) < 0) {
-		ESP_LOGE(TAG_HTTP, "... command send failed");
-		close(s);
-		return 0;
-	}
-
-	time_t epoch;
-	if ( read_buffer( s, (void *)&epoch, sizeof( epoch ) ) )
-	{ 
-		if ( !read_ack(s) ) 
+		if ( buffer[0] != sizeof( epoch ) + 1 )
 		{
-			ESP_LOGE(TAG_HTTP, "... ack not received");
+			ESP_LOGE(TAG_HTTP, "... FAILED");
 			close(s);
 			return 0;
 		}
+
+		memcpy( (void *)&epoch, buffer + 1, sizeof( epoch ) );
 
 		//ESP_LOGI(TAG_HTTP, "epoch = %lX", epoch );
 		
@@ -247,176 +266,82 @@ int synchronizeTime( CONFIGURATION * config )
 		
 		settimeofday( &now, NULL );
 		
-		ESP_LOGI(TAG_HTTP, "... time synchronized");
+		ESP_LOGI(TAG_HTTP, "... OK");
 		close(s);
 		return 1;
 	}
 	
-	ESP_LOGE(TAG_HTTP, "... time not received");
+	ESP_LOGE(TAG_HTTP, "... FAILED");
 	close(s);
 	return 0;
 }
 
-int sendCurrentAddress( CONFIGURATION * config )
+int get_local_address( int s, int * address )
 {
-    struct addrinfo *res;
-    struct in_addr *addr;
-    int s;
-
-	int err = getaddrinfo(config->serverAddress, config->serverPort, &hints, &res);
-
-	if(err != 0 || res == NULL) {
-		ESP_LOGE(TAG_HTTP, "DNS lookup failed err=%d res=%p", err, res);
-		vTaskDelay(1000 / portTICK_PERIOD_MS);
-		return 0;
-	}
-
-	addr = &((struct sockaddr_in *)res->ai_addr)->sin_addr;
-	//ESP_LOGI(TAG_HTTP, "DNS lookup succeeded. IP=%s", inet_ntoa(*addr));
-
-	s = socket(res->ai_family, res->ai_socktype, 0);
-	if(s < 0) {
-		ESP_LOGE(TAG_HTTP, "... Failed to allocate socket.");
-		freeaddrinfo(res);
-		return 0;
-	}
-	//ESP_LOGI(TAG_HTTP, "... allocated socket");
-	
-	struct timeval tv;
-	tv.tv_sec = 3;
-	tv.tv_usec = 0;
-	setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
-
-	if(connect(s, res->ai_addr, res->ai_addrlen) != 0) 
-	{
-		ESP_LOGE(TAG_HTTP, "... socket connect failed errno=%d", errno);
-		close(s);
-		freeaddrinfo(res);
-		return 0;
-	}
-
-	//ESP_LOGI(TAG_HTTP, "... connected");
-	freeaddrinfo(res);
-
-	uint8_t command[1] = { 3 };
-	if (write(s, command, sizeof(command) ) < 0) {
-		ESP_LOGE(TAG_HTTP, "... command send failed");
-		close(s);
-		return 0;
-	}
-
-	if (write(s, config->intName, strlen(config->intName)+1 ) < 0) {
-		ESP_LOGE(TAG_HTTP, "... name send failed");
-		close(s);
-		return 0;
-	}
-	ESP_LOGI(TAG_HTTP, "... sent interruptor name %s", config->intName);
-
 	struct sockaddr_in local_sin;
     socklen_t local_sinlen = sizeof(local_sin);
-
     getsockname(s, (struct sockaddr*)&local_sin, &local_sinlen);
-	//ESP_LOGI(TAG_HTTP, "local ip=%X", local_sin.sin_addr.s_addr );
-    
-	if (write(s, &local_sin.sin_addr.s_addr, sizeof(local_sin.sin_addr.s_addr) ) < 0) {
-		ESP_LOGE(TAG_HTTP, "... command send failed");
-		close(s);
-		return 0;
-	}
-	
-	if ( !read_ack(s) ) 
-	{
-		ESP_LOGE(TAG_HTTP, "... ack not received");
-		close(s);
-		return 0;
-	}
 
-	ESP_LOGI(TAG_HTTP, "... address sent");
-	close(s);
-	return 1;
+    return local_sin.sin_addr.s_addr;
 }
 
-int sendAliveSignal( CONFIGURATION * config, uint8_t state )
+int send_alive_signal( CONFIGURATION * config, uint8_t state, uint8_t * reload_plan, uint8_t * forced_action )
 {
-    struct addrinfo *res;
-    struct in_addr *addr;
-    int s;
+	uint8_t buffer[128];
 
-	int err = getaddrinfo(config->serverAddress, config->serverPort, &hints, &res);
+	int s;
+    if ( !connect_server( &s, config->serverAddress, config->serverPort ) )
+    	return 0;
 
-	if(err != 0 || res == NULL) {
-		ESP_LOGE(TAG_HTTP, "DNS lookup failed err=%d res=%p", err, res);
-		vTaskDelay(1000 / portTICK_PERIOD_MS);
+    int ip;
+    get_local_address( s, &ip );
+
+    uint8_t length = 2 + strlen(config->intName) + 1 + sizeof(ip) + 1;
+
+    int pos = 0;
+
+    buffer[pos] = length;
+    pos++;
+
+    buffer[pos] = 3;
+    pos++;
+
+    memcpy( buffer + pos, config->intName, strlen(config->intName) + 1 );
+    pos += strlen(config->intName) + 1;
+
+    buffer[pos] = state;
+    pos++;
+
+    memcpy( buffer + pos, &ip, sizeof(ip) );
+    pos += sizeof(ip);
+
+    uint16_t crc = calculate_crc( buffer, length );
+	memcpy( buffer + pos, &crc, sizeof( crc ) );
+
+	if ( write( s, buffer, length + 2 ) < 0) {
+		ESP_LOGE(TAG_HTTP, "... buffer send failed");
+		close(s);
 		return 0;
 	}
 
-	addr = &((struct sockaddr_in *)res->ai_addr)->sin_addr;
-	//ESP_LOGI(TAG_HTTP, "DNS lookup succeeded. IP=%s", inet_ntoa(*addr));
-
-	s = socket(res->ai_family, res->ai_socktype, 0);
-	if(s < 0) {
-		ESP_LOGE(TAG_HTTP, "... Failed to allocate socket.");
-		freeaddrinfo(res);
-		return 0;
-	}
-	//ESP_LOGI(TAG_HTTP, "... allocated socket");
-	
-	struct timeval tv;
-	tv.tv_sec = 3;
-	tv.tv_usec = 0;
-	setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
-
-	if(connect(s, res->ai_addr, res->ai_addrlen) != 0) 
+	if ( read_response( s, buffer ) )
 	{
-		ESP_LOGE(TAG_HTTP, "... socket connect failed errno=%d", errno);
+		if ( buffer[0] != 3 )
+		{
+			ESP_LOGE(TAG_HTTP, "... FAILED");
+			close(s);
+			return 0;
+		}
+
+		*reload_plan = buffer[1];
+		*forced_action = buffer[2];
+
+		ESP_LOGI(TAG_HTTP, "... OK");
 		close(s);
-		freeaddrinfo(res);
-		return 0;
+		return 1;
 	}
 
-	//ESP_LOGI(TAG_HTTP, "... connected");
-	freeaddrinfo(res);
-
-	uint8_t command[1] = { 4 };
-	if (write(s, command, sizeof(command) ) < 0) {
-		ESP_LOGE(TAG_HTTP, "... command send failed");
-		close(s);
-		return 0;
-	}
-
-	if (write(s, config->intName, strlen(config->intName)+1 ) < 0) {
-		ESP_LOGE(TAG_HTTP, "... name send failed");
-		close(s);
-		return 0;
-	}
-	ESP_LOGI(TAG_HTTP, "... sent interruptor name %s", config->intName);
-
-	if (write(s, &state, sizeof(state) ) < 0) {
-		ESP_LOGE(TAG_HTTP, "... status send failed");
-		close(s);
-		return 0;
-	}
-	
-	struct sockaddr_in local_sin;
-    socklen_t local_sinlen = sizeof(local_sin);
-
-    getsockname(s, (struct sockaddr*)&local_sin, &local_sinlen);
-	//ESP_LOGI(TAG_HTTP, "local ip=%X", local_sin.sin_addr.s_addr );
-    
-	if (write(s, &local_sin.sin_addr.s_addr, sizeof(local_sin.sin_addr.s_addr) ) < 0) {
-		ESP_LOGE(TAG_HTTP, "... command send failed");
-		close(s);
-		return 0;
-	}
-	
-	if ( !read_ack(s) ) 
-	{
-		ESP_LOGE(TAG_HTTP, "... ack not received");
-		close(s);
-		return 0;
-	}
-
-	ESP_LOGI(TAG_HTTP, "... alive signal sent");
+	ESP_LOGE(TAG_HTTP, "... FAILED");
 	close(s);
-	return 1;
+	return 0;
 }

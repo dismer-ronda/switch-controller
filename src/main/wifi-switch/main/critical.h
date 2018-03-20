@@ -18,4 +18,7 @@ void set_wifi_connected( uint8_t value );
 uint8_t is_configuration_changed();
 void set_configuration_changed( uint8_t value );
 
+uint8_t get_forced_action();
+uint8_t set_forced_action( uint8_t vallue );
+
 #endif

@@ -27,6 +27,9 @@ public class InterruptorVto extends GenericVto
 	private String enabled;
 	private String state;
 
+	private String forced_order;
+	private String forced_action;
+	
 	public InterruptorVto()
 	{
 	}

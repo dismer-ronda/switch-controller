@@ -278,6 +278,8 @@ public class SetInterruptorsPlanDlg extends Window
 					else
 						interruptor.setPlan_free( plan );
 					
+					interruptor.setReload_plan( 1 );
+					
 					IOCManager._InterruptorsManager.setRow( getContext(), clone, interruptor );	
 				}
 				catch ( Throwable e ) 

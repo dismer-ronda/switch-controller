@@ -15,7 +15,9 @@
 		<result property="enabled" column="enabled"/>
 		<result property="state" column="state"/>
 		<result property="last_signal" column="last_signal"/>
-					
+		<result property="reload_plan" column="reload_plan"/>
+		<result property="forced_action" column="forced_action"/>
+											
 		<collection property="holidays" column="id" ofType="mapHoliday" select="selectInterruptorHolidays"> </collection>
 	</resultMap>
     
@@ -37,7 +39,9 @@
 		interruptors.plan_free,
 		interruptors.enabled,
 		interruptors.state,
-		interruptors.last_signal
+		interruptors.last_signal,
+		interruptors.reload_plan,
+		interruptors.forced_action
 	</sql>
 	
 	<sql id="es.pryades.smartswitch.dal.ibatis.InterruptorMapper.joins">
@@ -120,7 +124,9 @@
 			plan_labor,
 			plan_free,
 			enabled,
-			last_signal
+			last_signal,
+			reload_plan,
+			forced_action
 		)
 		values
 		(
@@ -133,7 +139,9 @@
 			#{plan_labor},
 			#{plan_free},
 			#{enabled},
-			#{last_signal}
+			#{last_signal},
+			#{reload_plan},
+			#{forced_action}
 		)
 	</insert>
 
@@ -148,7 +156,9 @@
 			plan_free=#{plan_free},
 			enabled=#{enabled},
 			state=#{state},
-			last_signal=#{last_signal}
+			last_signal=#{last_signal},
+			reload_plan=#{reload_plan},
+			forced_action=#{forced_action}
 		where id = #{id}
 	</update>
 

@@ -27,9 +27,12 @@ public class Interruptor extends BaseDto
 	private byte[] plan_free;
 
 	private Integer	enabled;
+	private Integer	reload_plan;
 	
 	private Integer state;
 	private Long last_signal;
+	
+	private Integer forced_action;
 	
 	private List<Holiday> holidays;
 }

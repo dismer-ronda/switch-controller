@@ -23,6 +23,28 @@ void getHourMinute( int * h, int * m, int * s )
 	*s = ti->tm_sec;
 }
 
+void execute_action( int h, int m, int s )
+{
+	int index = (h * 4) + m/15;
+
+	uint8_t forced_action = get_forced_action();
+	const char * msg = forced_action != 0 ? "FORCED" : "PLANNED";
+
+	uint8_t action = forced_action == 0 ? get_plan( index ) : (forced_action == 1 ? 0 : 1);
+
+	ESP_LOGI(TAG_WORK, "Current time %02d:%02d:%02d", h, m, s);
+
+	if ( action != get_state() )
+	{
+		set_state( action );
+		ESP_LOGI(TAG_WORK, "State %s changed to %s...", msg, action ? "ON" : "OFF" );
+
+		io_relay( action );
+	}
+	else
+		ESP_LOGI(TAG_WORK, "State %s continue %s...", msg, action ? "ON" : "OFF" );
+}
+
 void working_task(void *p)
 {
 	while ( 1 )
@@ -30,27 +52,11 @@ void working_task(void *p)
 		int h, m, s;
 		getHourMinute( &h, &m, &s );
 
-		int index = (h * 4) + m/15;
-
-		uint8_t action = get_plan( index );
-
 		if ( h != 0 || m != 0 )
-		{
-			ESP_LOGI(TAG_WORK, "Current time %02d:%02d:%02d", h, m, s);
-
-			if ( action != get_state() )
-			{
-				set_state( action );
-				ESP_LOGI(TAG_WORK, "State changed to %s...", action ? "ON" : "OFF" );
-
-				io_relay( action );
-			}
-			else
-				ESP_LOGI(TAG_WORK, "State continue %s...", action ? "ON" : "OFF" );
-		}
+			execute_action( h, m, s );
 		else
-			ESP_LOGI(TAG_WORK, "At this time a new plan is being retrieved. Action %s is delayed...", action ? "ON" : "OFF" );
-		
+			ESP_LOGI(TAG_WORK, "At this time a new plan is being retrieved. Action is delayed..." );
+
 		ESP_LOGI(TAG_WORK, "Waiting for %d seconds...", 60-s );
 		vTaskDelay((60-s)*1000 / portTICK_PERIOD_MS);
 	}
@@ -63,12 +69,13 @@ void reboot( char * message )
 	esp_restart();
 }
 	
-void load_plan( CONFIGURATION * config )
+void load_plan( CONFIGURATION * config, int h, int m, int s )
 {
 	set_plan_loaded( 0 );
 
-	uint8_t new_plan[96];
-	if ( !getWorkingPlan( config, new_plan ) )
+	ESP_LOGI(TAG_MAIN, "Retrieving plan...");
+	uint8_t new_plan[96], forced_action;
+	if ( !get_working_plan( config, new_plan, &forced_action ) )
 	{
 		ESP_LOGE(TAG_MAIN, "Could not retrieve new working plan. Current plan continue." );
 	}
@@ -76,11 +83,35 @@ void load_plan( CONFIGURATION * config )
 	{
 		set_plan( new_plan );
 		set_plan_loaded( 1 );
-	}
 
-	if ( !synchronizeTime( config ) )
-		ESP_LOGE(TAG_MAIN, "Time synchronization failed. Current time continue." );
+		set_forced_action( forced_action );
+
+		execute_action( h, m, s );
+	}
 }
+
+/*void execute_forced_action( uint8_t forced_action )
+{
+	uint8_t last_forced_action = set_forced_action( forced_action );
+
+	if ( forced_action != last_forced_action )
+	{
+		uint8_t action = forced_action == 0 ? get_plan( index ) : (forced_action == 1 ? 0 : 1);
+
+		uint8_t action = forced_action == 1 ? 0 : 1;
+		const char * msg = forced_action != 0 ? "FORCED" : "PLANNED";
+
+		if ( action != get_state() )
+		{
+			set_state( action );
+			ESP_LOGI(TAG_WORK, "State %s changed to %s...", msg, action ? "ON" : "OFF" );
+
+			io_relay( action );
+		}
+		else
+			ESP_LOGI(TAG_WORK, "State %s continue %s...", msg, action ? "ON" : "OFF" );
+	}
+}*/
 
 void app_main()
 {
@@ -93,7 +124,7 @@ void app_main()
     }
     ESP_ERROR_CHECK( err );
 
-	vTaskDelay(5000 / portTICK_PERIOD_MS);
+	vTaskDelay(3000 / portTICK_PERIOD_MS);
 	read_configuration();
 
 	CONFIGURATION * config = get_configuration();
@@ -122,7 +153,8 @@ void app_main()
 	int retries = 5;
 	while ( 1 )
 	{
-		if ( synchronizeTime( config ) )
+		ESP_LOGI(TAG_MAIN, "Synchronizing time...");
+		if ( synchronize_time( config ) )
 			break;
 		
 		if ( !(retries--) )
@@ -138,11 +170,14 @@ void app_main()
 	retries = 5;
 	while ( 1 )
 	{
-		uint8_t new_plan[96];
-		if ( getWorkingPlan( config, new_plan ) )
+		ESP_LOGI(TAG_MAIN, "Retrieving plan...");
+		uint8_t new_plan[96], forced_action;
+		if ( get_working_plan( config, new_plan, &forced_action ) )
 		{
 			set_plan( new_plan );
 			set_plan_loaded( 1 );
+
+			set_forced_action( forced_action );
 
 			break;
 		}
@@ -162,15 +197,30 @@ void app_main()
 		getHourMinute( &h, &m, &s );
 
 		if ( (h == 0 && m == 0) || !is_plan_loaded() )
-			load_plan(config);
+		{
+			load_plan(config, h, m, s );
 
-		ESP_LOGI(TAG_MAIN, "Waiting for %d seconds...", 60-s );
-		vTaskDelay((60-s)*1000 / portTICK_PERIOD_MS);
+			ESP_LOGI(TAG_MAIN, "Synchronizing time...");
+			if ( !synchronize_time( config ) )
+				ESP_LOGE(TAG_MAIN, "Time synchronization failed. Current time continue." );
+		}
+
+		ESP_LOGI(TAG_MAIN, "Waiting for %d seconds...", 65-s );
+		vTaskDelay((65-s)*1000 / portTICK_PERIOD_MS);
 
 		if ( is_configuration_changed() )
 			reboot("Configuration changed. Restarting...");
 
+		uint8_t reload_plan, forced_action;
 		ESP_LOGI(TAG_MAIN, "Sending alive signal...");
-		led_connection( sendAliveSignal( config, get_state() ) );
+		led_connection( send_alive_signal( config, get_state(), &reload_plan, &forced_action ) );
+
+		uint8_t last_forced_action = set_forced_action( forced_action );
+
+		if ( last_forced_action != get_forced_action() && !reload_plan )
+			execute_action( h, m, s );
+
+		if ( reload_plan )
+			load_plan( config, h, m, s  );
 	}
 }
