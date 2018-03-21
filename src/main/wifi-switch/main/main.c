@@ -191,6 +191,8 @@ void app_main()
 		
 	xTaskCreate(&working_task, "working_task", 4096, NULL, 5, NULL);
 
+	led_connection( 1 );
+
 	while ( 1 )
 	{
 		int h, m, s;

@@ -79,6 +79,7 @@ public class ModalNewInterruptor extends ModalWindowsCRUD
 			newInterruptor.setPlan_free( getNewPlan() );
 			newInterruptor.setEnabled( 1 );
 			newInterruptor.setForced_action( 0 );
+			newInterruptor.setReload_plan( 0 );
 		}
 
 		bi = new BeanItem<BaseDto>( newInterruptor );
