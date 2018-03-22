@@ -1,5 +1,5 @@
 .v-verticallayout-indigo_mainlogin {
-	background-image: url('../images/background.jpg');
+	background-image: url('../images/manos-director-orquesta.jpg');
 	background-size: 100% 100%;
 	background-repeat: no-repeat;
 }
@@ -66,7 +66,7 @@
 
 .v-label-login_header {
 	color: white;
-	background-color: #2B2926; 
+	background-color: #161616; 
 
 	font-size: 16px;
     /*font-family: "droidsans";*/
@@ -76,7 +76,7 @@
 }
 
 .v-horizontallayout-login_header {
-	background-color: #2B2926; 
+	background-color: #161616; 
 
 	padding: 8px;
 
@@ -86,7 +86,7 @@
 
 .v-verticallayout-indigo_loginform {
 	/*border-radius: 6px;*/
-	border: 1px solid #266f9a;
+	border: 1px solid #161616;
 	background-color: #E6E6E6;
 	/*background: -moz-linear-gradient(#d7d8d9, #FFF, #FFF, #FFF);
 	background: -o-linear-gradient(#d7d8d9, #FFF, #FFF, #FFF);
@@ -147,7 +147,7 @@
 }
 
 .v-verticallayout-summary {
-	border: 2px solid #2B2926;
+	border: 2px solid #161616;
 	background-color: #33A431;
 	border-radius: 5px;
 	cursor: pointer;
@@ -156,7 +156,7 @@
 }
 
 .v-verticallayout-alarms {
-	border: 2px solid #2B2926;
+	border: 2px solid #161616;
 	background-color: #E9B01F;
 	border-radius: 5px;
 	cursor: pointer;
@@ -165,7 +165,7 @@
 }
 
 .v-verticallayout-information {
-	border: 2px solid #2B2926;
+	border: 2px solid #161616;
 	background-color: #17B5A4;
 	border-radius: 5px;
 	cursor: pointer;

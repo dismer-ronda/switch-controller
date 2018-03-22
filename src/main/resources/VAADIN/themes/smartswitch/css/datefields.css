@@ -29,14 +29,14 @@
 td.v-datefield-calendarpanel-month {
 	font-size: 18px;
 	text-shadow: none;
-	background: #2B2926;
+	background: #161616;
 	color: white;
 }
 
 .v-datefield-calendarpanel-weekdays strong {
 	font-size: 18px;
 	text-shadow: none;
-	background: #2B2926;
+	background: #161616;
 }
 
 input.v-datefield-textfield[type="text"] {

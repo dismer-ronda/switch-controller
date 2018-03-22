@@ -46,15 +46,22 @@ public class LoginWnd extends VerticalLayout
 		
 		HorizontalLayout rowLogos = new HorizontalLayout();
 		rowLogos.setMargin( true );
+		rowLogos.setWidth( "100%" );
 		rowLogos.setHeight( "" + height/3 + "px" );
 		
 		HorizontalLayout rowImages = new HorizontalLayout();
 		rowImages.setMargin( true );
 		rowImages.setSpacing( true );
+		rowImages.setWidth( "100%" );
 
 		Image image = new Image( null, new ThemeResource( "images/login-logo.png" ) );
+		Image image1 = new Image( null, new ThemeResource( "images/verdi.png" ) );
+		
 		rowImages.addComponent( image );
-		rowImages.setComponentAlignment( image, Alignment.MIDDLE_CENTER );
+		rowImages.addComponent( image1 );
+		
+		rowImages.setComponentAlignment( image, Alignment.MIDDLE_LEFT );
+		rowImages.setComponentAlignment( image1, Alignment.MIDDLE_RIGHT );
 
 		/*Image image1 = new Image( null, new ThemeResource( "images/liv-iq-insights-text" + (Settings.getSetting( "beta", "false" ).equals( "true" ) ? "-beta" : "") + ".png" ) );
 		rowImages.addComponent( image1 );
@@ -79,5 +86,16 @@ public class LoginWnd extends VerticalLayout
 	    addComponent( rowLogos );
 	    addComponent( row );
 	    addComponent( dummyRow );
+
+		/*HorizontalLayout rowImages1 = new HorizontalLayout();
+		rowImages1.setMargin( true );
+		rowImages1.setSpacing( true );
+		rowImages1.setWidth( "100%" );
+
+		Image image1 = new Image( null, new ThemeResource( "images/verdi.png" ) );
+		rowImages1.addComponent( image1 );
+		rowImages1.setComponentAlignment( image1, Alignment.MIDDLE_RIGHT );
+		
+	    addComponent( rowImages1 );*/
 	}
 }

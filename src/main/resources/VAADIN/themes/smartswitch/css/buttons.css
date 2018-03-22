@@ -8,8 +8,8 @@
 .v-button, 
 .v-disabled.v-button:focus, 
 .v-disabled.v-button:active {
-	border: 1px solid #2B2926;
-	background: #2B2926;
+	border: 1px solid #161616;
+	background: #161616;
 	border-radius: 0px;
 	text-shadow: 0 0px;
 	padding: 4px;
@@ -117,14 +117,14 @@ div.v-button-icon-on-top.v-button-borderless:focus .v-button-caption {
 .v-ie8 .v-pressed.v-button, 
 .v-button-down {
 	border: none;
-	background: #2B2926;
+	background: #161616;
 }
 
 .v-button-transparent:active .v-button-wrap,
 .v-ie8 .v-pressed.v-button .v-button-wrap, 
 .v-button-down .v-button-wrap {
 	border: none;
-	background: #2B2926;
+	background: #161616;
 	padding: 0px;
 	text-align: left;
 }
