@@ -90,28 +90,10 @@ void load_plan( CONFIGURATION * config, int h, int m, int s )
 	}
 }
 
-/*void execute_forced_action( uint8_t forced_action )
+void try_send_alive_signal( CONFIGURATION * config )
 {
-	uint8_t last_forced_action = set_forced_action( forced_action );
 
-	if ( forced_action != last_forced_action )
-	{
-		uint8_t action = forced_action == 0 ? get_plan( index ) : (forced_action == 1 ? 0 : 1);
-
-		uint8_t action = forced_action == 1 ? 0 : 1;
-		const char * msg = forced_action != 0 ? "FORCED" : "PLANNED";
-
-		if ( action != get_state() )
-		{
-			set_state( action );
-			ESP_LOGI(TAG_WORK, "State %s changed to %s...", msg, action ? "ON" : "OFF" );
-
-			io_relay( action );
-		}
-		else
-			ESP_LOGI(TAG_WORK, "State %s continue %s...", msg, action ? "ON" : "OFF" );
-	}
-}*/
+}
 
 void app_main()
 {
@@ -193,6 +175,7 @@ void app_main()
 
 	led_connection( 1 );
 
+	int wait = 1;
 	while ( 1 )
 	{
 		int h, m, s;
@@ -200,15 +183,18 @@ void app_main()
 
 		if ( (h == 0 && m == 0) || !is_plan_loaded() )
 		{
-			load_plan(config, h, m, s );
+			load_plan( config, h, m, s );
 
 			ESP_LOGI(TAG_MAIN, "Synchronizing time...");
 			if ( !synchronize_time( config ) )
 				ESP_LOGE(TAG_MAIN, "Time synchronization failed. Current time continue." );
 		}
 
-		ESP_LOGI(TAG_MAIN, "Waiting for %d seconds...", 65-s );
-		vTaskDelay((65-s)*1000 / portTICK_PERIOD_MS);
+		if ( wait )
+		{
+			ESP_LOGI(TAG_MAIN, "Waiting for %d seconds...", 65-s );
+			vTaskDelay((65-s)*1000 / portTICK_PERIOD_MS);
+		}
 
 		if ( is_configuration_changed() )
 			reboot("Configuration changed. Restarting...");
@@ -218,11 +204,12 @@ void app_main()
 		led_connection( send_alive_signal( config, get_state(), &reload_plan, &forced_action ) );
 
 		uint8_t last_forced_action = set_forced_action( forced_action );
-
-		if ( last_forced_action != get_forced_action() && !reload_plan )
-			execute_action( h, m, s );
+		
+		wait = last_forced_action == forced_action && !reload_plan;
 
 		if ( reload_plan )
 			load_plan( config, h, m, s  );
+		else if ( last_forced_action != get_forced_action() )
+			execute_action( h, m, s );
 	}
 }
